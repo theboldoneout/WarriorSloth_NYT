@@ -1,0 +1,401 @@
+/* =========================================
+   GENERAL PAGE
+   ========================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #f7f3ed;
+    color: #241f1c;
+    font-family: Georgia, "Times New Roman", serif;
+    min-height: 100vh;
+}
+
+button {
+    font-family: inherit;
+}
+
+.container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+
+/* =========================================
+   SCREENS
+   ========================================= */
+
+.screen {
+    width: 100%;
+    max-width: 650px;
+    text-align: center;
+    animation: fadeIn 0.6s ease;
+}
+
+.hidden {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* =========================================
+   INTRO SCREEN
+   ========================================= */
+
+.eyebrow {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 25px;
+    color: #7d1f2c;
+}
+
+h1 {
+    font-size: 52px;
+    line-height: 1.08;
+    font-weight: normal;
+    margin-bottom: 30px;
+}
+
+.intro-text {
+    max-width: 430px;
+    margin: 0 auto 35px;
+    font-size: 18px;
+    line-height: 1.7;
+    color: #5d5550;
+}
+
+button {
+    border: none;
+    background: #7d1f2c;
+    color: #fff;
+    padding: 15px 38px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+button:hover {
+    background: #5f1721;
+    transform: translateY(-2px);
+}
+
+
+/* =========================================
+   GAME HEADINGS
+   ========================================= */
+
+.game-number {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #8c817a;
+    margin-bottom: 12px;
+}
+
+h2 {
+    font-size: 32px;
+    font-weight: normal;
+    letter-spacing: 4px;
+    margin-bottom: 10px;
+}
+
+.instruction {
+    font-family: Arial, sans-serif;
+    color: #766d67;
+    font-size: 13px;
+    margin-bottom: 30px;
+}
+
+
+/* =========================================
+   WORDLE
+   ========================================= */
+
+#wordle-board {
+    width: 300px;
+    margin: 0 auto 25px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+
+.wordle-row {
+    display: contents;
+}
+
+.wordle-tile {
+    width: 54px;
+    height: 54px;
+    border: 1px solid #b8afa8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.wordle-tile.correct {
+    background: #7d1f2c;
+    color: white;
+    border-color: #7d1f2c;
+}
+
+.wordle-tile.present {
+    background: #b58b3c;
+    color: white;
+    border-color: #b58b3c;
+}
+
+.wordle-tile.absent {
+    background: #817a75;
+    color: white;
+    border-color: #817a75;
+}
+
+
+/* =========================================
+   MESSAGES BETWEEN GAMES
+   ========================================= */
+
+.message {
+    max-width: 480px;
+    margin: 25px auto;
+    font-size: 17px;
+    line-height: 1.7;
+    color: #4e4742;
+}
+
+
+/* =========================================
+   CONNECTIONS
+   ========================================= */
+
+#connections-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    max-width: 600px;
+    margin: 0 auto 25px;
+}
+
+.connection-tile {
+    min-height: 85px;
+    background: #e9e3dc;
+    border: none;
+    color: #241f1c;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.connection-tile:hover {
+    background: #ddd5cc;
+    transform: none;
+}
+
+.connection-tile.selected {
+    background: #241f1c;
+    color: white;
+}
+
+.connection-group {
+    width: 100%;
+    padding: 18px;
+    margin-bottom: 8px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.connection-group:nth-child(1) {
+    background: #e6d9bd;
+}
+
+.connection-group:nth-child(2) {
+    background: #d7d8d1;
+}
+
+.connection-group:nth-child(3) {
+    background: #d8c4c4;
+}
+
+.connection-group:nth-child(4) {
+    background: #c9d2d1;
+}
+
+
+/* =========================================
+   STRANDS
+   ========================================= */
+
+#strands-board {
+    width: 340px;
+    min-height: 340px;
+    margin: 0 auto 30px;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    align-items: center;
+    justify-items: center;
+}
+
+.strand-letter {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #eee9e3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.strand-letter:hover {
+    transform: scale(1.08);
+}
+
+.strand-letter.selected {
+    background: #7d1f2c;
+    color: white;
+}
+
+.strand-letter.found {
+    background: #b58b3c;
+    color: white;
+}
+
+
+/* =========================================
+   FINAL APOLOGY
+   ========================================= */
+
+#final {
+    max-width: 650px;
+}
+
+#final h1 {
+    margin-bottom: 40px;
+}
+
+.letter {
+    background: #fffdf9;
+    border: 1px solid #e1d9d0;
+    padding: 45px 50px;
+    text-align: left;
+    box-shadow: 0 10px 40px rgba(36, 31, 28, 0.06);
+}
+
+.letter p {
+    font-size: 17px;
+    line-height: 1.9;
+    margin-bottom: 22px;
+}
+
+.letter p:first-child {
+    font-size: 25px;
+    color: #7d1f2c;
+}
+
+.letter p:last-child {
+    margin-bottom: 0;
+    text-align: center;
+    font-size: 20px;
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 600px) {
+
+    .container {
+        padding: 30px 15px;
+    }
+
+    h1 {
+        font-size: 38px;
+    }
+
+    h2 {
+        font-size: 27px;
+    }
+
+    .intro-text {
+        font-size: 16px;
+    }
+
+    #wordle-board {
+        width: 280px;
+        gap: 5px;
+    }
+
+    .wordle-tile {
+        width: 52px;
+        height: 52px;
+    }
+
+    #connections-grid {
+        gap: 5px;
+    }
+
+    .connection-tile {
+        min-height: 75px;
+        font-size: 10px;
+        padding: 6px;
+    }
+
+    #strands-board {
+        width: 300px;
+    }
+
+    .strand-letter {
+        width: 34px;
+        height: 34px;
+        font-size: 13px;
+    }
+
+    .letter {
+        padding: 30px 25px;
+    }
+
+    .letter p {
+        font-size: 16px;
+    }
+}
