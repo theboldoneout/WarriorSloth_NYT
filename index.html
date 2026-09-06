@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>For You ❤️</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <!-- INTRO SCREEN -->
+        <section id="intro" class="screen">
+            <p class="eyebrow">A little something for you</p>
+
+            <h1>Three games.<br>One thing I need to say.</h1>
+
+            <p class="intro-text">
+                You know how we play these every day?
+                I thought I'd make one for you.
+            </p>
+
+            <button onclick="startGame()">PLAY</button>
+        </section>
+
+
+        <!-- WORDLE SCREEN -->
+        <section id="wordle" class="screen hidden">
+
+            <p class="game-number">01 / 03</p>
+
+            <h2>WORDLE</h2>
+
+            <p class="instruction">
+                You have 6 tries.
+            </p>
+
+            <div id="wordle-board"></div>
+
+            <div id="wordle-message" class="message"></div>
+
+        </section>
+
+
+        <!-- CONNECTIONS SCREEN -->
+        <section id="connections" class="screen hidden">
+
+            <p class="game-number">02 / 03</p>
+
+            <h2>CONNECTIONS</h2>
+
+            <p class="instruction">
+                Find the four groups.
+            </p>
+
+            <div id="connections-grid"></div>
+
+            <div id="connections-message" class="message"></div>
+
+        </section>
+
+
+        <!-- STRANDS SCREEN -->
+        <section id="strands" class="screen hidden">
+
+            <p class="game-number">03 / 03</p>
+
+            <h2>STRANDS</h2>
+
+            <p class="instruction">
+                Find the hidden words.
+            </p>
+
+            <div id="strands-board"></div>
+
+            <div id="strands-message" class="message"></div>
+
+        </section>
+
+
+        <!-- FINAL APOLOGY -->
+        <section id="final" class="screen hidden">
+
+            <p class="eyebrow">You made it.</p>
+
+            <h1>Now for the part<br>I actually mean.</h1>
+
+            <div class="letter">
+
+                <p>
+                    I'm sorry.
+                </p>
+
+                <p>
+                    Not in the way where I expect those two words
+                    to magically fix everything, but in the way where
+                    I understand that I hurt you and that I'm responsible
+                    for rebuilding what I damaged.
+                </p>
+
+                <p>
+                    I know trust isn't something I can ask you to
+                    simply give back to me.
+                </p>
+
+                <p>
+                    It's something I have to earn.
+                </p>
+
+                <p>
+                    So this isn't me asking you to forget.
+                    It's me saying that I want to show you,
+                    consistently, that I can do better.
+                </p>
+
+                <p>
+                    I love you. ❤️
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
