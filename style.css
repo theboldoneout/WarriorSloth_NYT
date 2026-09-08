@@ -1,6 +1,6 @@
-/* =========================================
-   GENERAL PAGE
-   ========================================= */
+/* =========================================================
+   GENERAL
+   ========================================================= */
 
 * {
     box-sizing: border-box;
@@ -22,21 +22,25 @@ button {
 .container {
     width: 100%;
     min-height: 100vh;
+
     display: flex;
     justify-content: center;
     align-items: center;
+
     padding: 40px 20px;
 }
 
 
-/* =========================================
+/* =========================================================
    SCREENS
-   ========================================= */
+   ========================================================= */
 
 .screen {
     width: 100%;
     max-width: 650px;
+
     text-align: center;
+
     animation: fadeIn 0.6s ease;
 }
 
@@ -45,6 +49,7 @@ button {
 }
 
 @keyframes fadeIn {
+
     from {
         opacity: 0;
         transform: translateY(12px);
@@ -57,345 +62,757 @@ button {
 }
 
 
-/* =========================================
-   INTRO SCREEN
-   ========================================= */
+/* =========================================================
+   INTRO
+   ========================================================= */
 
 .eyebrow {
     font-family: Arial, sans-serif;
-    font-size: 12px;
+
+    font-size: 11px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    margin-bottom: 25px;
+
     color: #7d1f2c;
+
+    margin-bottom: 25px;
 }
 
 h1 {
     font-size: 52px;
     line-height: 1.08;
+
     font-weight: normal;
+
     margin-bottom: 30px;
 }
 
 .intro-text {
     max-width: 430px;
+
     margin: 0 auto 35px;
+
     font-size: 18px;
     line-height: 1.7;
+
     color: #5d5550;
 }
 
 button {
     border: none;
+
     background: #7d1f2c;
-    color: #fff;
+    color: white;
+
     padding: 15px 38px;
+
     font-size: 13px;
     letter-spacing: 2px;
+
     cursor: pointer;
-    transition: all 0.25s ease;
+
+    transition: all 0.2s ease;
 }
 
 button:hover {
-    background: #5f1721;
+    background: #641923;
+
     transform: translateY(-2px);
 }
 
 
-/* =========================================
-   GAME HEADINGS
-   ========================================= */
+/* =========================================================
+   GAME HEADERS
+   ========================================================= */
 
 .game-number {
     font-family: Arial, sans-serif;
+
     font-size: 11px;
     letter-spacing: 3px;
+
     color: #8c817a;
+
     margin-bottom: 12px;
 }
 
 h2 {
     font-size: 32px;
+
     font-weight: normal;
+
     letter-spacing: 4px;
+
     margin-bottom: 10px;
 }
 
 .instruction {
     font-family: Arial, sans-serif;
+
     color: #766d67;
+
     font-size: 13px;
-    margin-bottom: 30px;
+
+    margin-bottom: 28px;
 }
 
 
-/* =========================================
-   WORDLE
-   ========================================= */
+/* =========================================================
+   WORDLE BOARD
+   ========================================================= */
 
 #wordle-board {
-    width: 300px;
-    margin: 0 auto 25px;
+
+    width: 290px;
+
+    margin: 0 auto 18px;
+
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+
+    grid-template-columns:
+        repeat(5, 1fr);
+
     gap: 6px;
 }
 
-.wordle-row {
-    display: contents;
-}
-
 .wordle-tile {
+
     width: 54px;
     height: 54px;
-    border: 1px solid #b8afa8;
+
+    border: 2px solid #b9b1aa;
+
     display: flex;
+
     justify-content: center;
     align-items: center;
+
     font-family: Arial, sans-serif;
+
     font-size: 20px;
+
     font-weight: bold;
+
     text-transform: uppercase;
+
+    transition:
+        background 0.3s ease,
+        border-color 0.3s ease,
+        color 0.3s ease;
 }
+
+
+/* CORRECT = GREEN */
 
 .wordle-tile.correct {
-    background: #7d1f2c;
+
+    background: #538d4e;
+
+    border-color: #538d4e;
+
     color: white;
-    border-color: #7d1f2c;
 }
+
+
+/* PRESENT = YELLOW */
 
 .wordle-tile.present {
-    background: #b58b3c;
+
+    background: #b59f3b;
+
+    border-color: #b59f3b;
+
     color: white;
-    border-color: #b58b3c;
 }
+
+
+/* ABSENT = GREY */
 
 .wordle-tile.absent {
-    background: #817a75;
+
+    background: #787c7e;
+
+    border-color: #787c7e;
+
     color: white;
-    border-color: #817a75;
 }
 
 
-/* =========================================
-   MESSAGES BETWEEN GAMES
-   ========================================= */
+/* =========================================================
+   WORDLE KEYBOARD
+   ========================================================= */
+
+#wordle-keyboard {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 6px;
+
+    margin-top: 10px;
+}
+
+.keyboard-row {
+
+    display: flex;
+
+    gap: 5px;
+
+    justify-content: center;
+}
+
+.wordle-key {
+
+    width: 38px;
+    height: 48px;
+
+    padding: 0;
+
+    background: #d9d3cd;
+
+    color: #241f1c;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    letter-spacing: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 3px;
+
+    transform: none;
+}
+
+.wordle-key:hover {
+
+    transform: none;
+
+    background: #c9c2bb;
+}
+
+
+/* Keyboard green */
+
+.wordle-key.key-correct {
+
+    background: #538d4e;
+
+    color: white;
+}
+
+
+/* Keyboard yellow */
+
+.wordle-key.key-present {
+
+    background: #b59f3b;
+
+    color: white;
+}
+
+
+/* Keyboard grey */
+
+.wordle-key.key-absent {
+
+    background: #787c7e;
+
+    color: white;
+}
+
+.wide-key {
+
+    width: 70px;
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   MESSAGES
+   ========================================================= */
 
 .message {
-    max-width: 480px;
+
+    max-width: 500px;
+
     margin: 25px auto;
+
     font-size: 17px;
+
     line-height: 1.7;
+
     color: #4e4742;
 }
 
 
-/* =========================================
+/* =========================================================
    CONNECTIONS
-   ========================================= */
+   ========================================================= */
 
 #connections-grid {
+
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
     gap: 8px;
-    max-width: 600px;
+
+    width: 100%;
+
+    max-width: 620px;
+
     margin: 0 auto 25px;
 }
 
+
+/* Individual tiles */
+
 .connection-tile {
-    min-height: 85px;
-    background: #e9e3dc;
-    border: none;
+
+    width: 100%;
+
+    min-height: 88px;
+
+    padding: 12px 7px;
+
+    background: #ebe7e1;
+
     color: #241f1c;
+
+    border: none;
+
+    border-radius: 4px;
+
     display: flex;
+
     justify-content: center;
+
     align-items: center;
-    padding: 10px;
+
+    text-align: center;
+
     font-family: Arial, sans-serif;
-    font-size: 12px;
+
+    font-size: 11px;
+
     font-weight: bold;
-    letter-spacing: 0.5px;
+
+    letter-spacing: 0.2px;
+
+    line-height: 1.25;
+
     cursor: pointer;
-    transition: all 0.2s ease;
+
+    transition:
+        background 0.2s ease,
+        transform 0.15s ease;
 }
 
 .connection-tile:hover {
-    background: #ddd5cc;
+
+    background: #ded8d1;
+
     transform: none;
 }
 
+
+/* Selected */
+
 .connection-tile.selected {
+
     background: #241f1c;
+
     color: white;
 }
 
-.connection-group {
-    width: 100%;
-    padding: 18px;
-    margin-bottom: 8px;
+
+/* Wrong */
+
+.connection-tile.wrong {
+
+    animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+
+    0% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    50% {
+        transform: translateX(5px);
+    }
+
+    75% {
+        transform: translateX(-5px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+
+/* =========================================================
+   SOLVED CONNECTIONS BOX
+   ========================================================= */
+
+.connection-solved-group {
+
+    grid-column: 1 / -1;
+
+    min-height: 92px;
+
+    border-radius: 4px;
+
+    padding: 18px 20px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    text-align: center;
+
+    animation: groupReveal 0.4s ease;
+}
+
+@keyframes groupReveal {
+
+    from {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+/* Four Connections colours */
+
+.connection-solved-group.group-1 {
+
+    background: #ead9a8;
+}
+
+.connection-solved-group.group-2 {
+
+    background: #d7d8ce;
+}
+
+.connection-solved-group.group-3 {
+
+    background: #d9c5c5;
+}
+
+.connection-solved-group.group-4 {
+
+    background: #c8d3d0;
+}
+
+.solved-title {
+
     font-family: Arial, sans-serif;
+
     font-size: 13px;
+
+    font-weight: bold;
+
+    margin-bottom: 8px;
+}
+
+.solved-words {
+
+    font-family: Arial, sans-serif;
+
+    font-size: 11px;
+
     line-height: 1.5;
-}
 
-.connection-group:nth-child(1) {
-    background: #e6d9bd;
-}
-
-.connection-group:nth-child(2) {
-    background: #d7d8d1;
-}
-
-.connection-group:nth-child(3) {
-    background: #d8c4c4;
-}
-
-.connection-group:nth-child(4) {
-    background: #c9d2d1;
+    color: #403b37;
 }
 
 
-/* =========================================
+/* =========================================================
    STRANDS
-   ========================================= */
+   ========================================================= */
 
 #strands-board {
-    width: 340px;
-    min-height: 340px;
-    margin: 0 auto 30px;
-    position: relative;
+
+    width: min(90vw, 520px);
+
+    aspect-ratio: 1 / 1;
+
+    margin: 20px auto 30px;
+
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-    align-items: center;
-    justify-items: center;
+
+    grid-template-columns:
+        repeat(11, 1fr);
+
+    gap: 5px;
+
+    padding: 12px;
+
+    background: #ebe7e1;
+
+    border-radius: 12px;
 }
 
+
+/* Letter circles */
+
 .strand-letter {
-    width: 38px;
-    height: 38px;
+
+    width: 100%;
+    aspect-ratio: 1 / 1;
+
+    padding: 0;
+
     border-radius: 50%;
-    background: #eee9e3;
+
+    background: #d5cec7;
+
+    color: #241f1c;
+
+    border: none;
+
     display: flex;
-    justify-content: center;
+
     align-items: center;
+    justify-content: center;
+
     font-family: Arial, sans-serif;
-    font-size: 15px;
+
+    font-size: clamp(9px, 1.8vw, 15px);
+
     font-weight: bold;
+
     cursor: pointer;
-    transition: all 0.2s ease;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.15s ease;
+
+    transform: none;
 }
 
 .strand-letter:hover {
-    transform: scale(1.08);
+
+    background: #c6beb6;
+
+    transform: scale(1.05);
 }
+
+
+/* Selected */
 
 .strand-letter.selected {
+
     background: #7d1f2c;
+
     color: white;
+
+    transform: scale(1.05);
 }
+
+
+/* Found */
 
 .strand-letter.found {
-    background: #b58b3c;
+
+    background: #b59f3b;
+
     color: white;
 }
 
 
-/* =========================================
+/* =========================================================
    FINAL APOLOGY
-   ========================================= */
+   ========================================================= */
 
 #final {
+
     max-width: 650px;
 }
 
 #final h1 {
+
     margin-bottom: 40px;
 }
 
 .letter {
+
     background: #fffdf9;
+
     border: 1px solid #e1d9d0;
+
     padding: 45px 50px;
+
     text-align: left;
-    box-shadow: 0 10px 40px rgba(36, 31, 28, 0.06);
+
+    box-shadow:
+        0 10px 40px
+        rgba(36, 31, 28, 0.06);
 }
 
 .letter p {
+
     font-size: 17px;
+
     line-height: 1.9;
+
     margin-bottom: 22px;
 }
 
 .letter p:first-child {
+
     font-size: 25px;
+
     color: #7d1f2c;
 }
 
 .letter p:last-child {
+
     margin-bottom: 0;
+
     text-align: center;
+
     font-size: 20px;
 }
 
 
-/* =========================================
+/* =========================================================
    MOBILE
-   ========================================= */
+   ========================================================= */
 
 @media (max-width: 600px) {
 
     .container {
-        padding: 30px 15px;
+
+        padding: 25px 12px;
     }
 
     h1 {
+
         font-size: 38px;
     }
 
     h2 {
+
         font-size: 27px;
     }
 
     .intro-text {
+
         font-size: 16px;
     }
 
+
+    /* WORDLE */
+
     #wordle-board {
+
         width: 280px;
+
         gap: 5px;
     }
 
     .wordle-tile {
+
         width: 52px;
+
         height: 52px;
     }
 
+    .wordle-key {
+
+        width: 30px;
+
+        height: 44px;
+
+        font-size: 10px;
+    }
+
+    .wide-key {
+
+        width: 62px;
+    }
+
+
+    /* CONNECTIONS */
+
     #connections-grid {
+
         gap: 5px;
     }
 
     .connection-tile {
-        min-height: 75px;
-        font-size: 10px;
-        padding: 6px;
+
+        min-height: 78px;
+
+        font-size: 9px;
+
+        padding: 6px 4px;
     }
 
+    .connection-solved-group {
+
+        padding: 16px 12px;
+    }
+
+
+    /* STRANDS */
+
     #strands-board {
-        width: 300px;
+
+        width: 94vw;
+
+        max-width: 420px;
+
+        gap: 3px;
+
+        padding: 8px;
     }
 
     .strand-letter {
-        width: 34px;
-        height: 34px;
-        font-size: 13px;
+
+        font-size: 9px;
     }
 
+
+    /* FINAL */
+
     .letter {
-        padding: 30px 25px;
+
+        padding: 30px 24px;
     }
 
     .letter p {
+
         font-size: 16px;
     }
 }
