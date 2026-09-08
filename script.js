@@ -1,885 +1,867 @@
-const SCREENS = ["intro", "wordle", "connections", "strands", "final"];
+/* APOLOGY GAMES */
 
-function showScreen(screenId) {
-    SCREENS.forEach((id) => {
-        const screen = document.getElementById(id);
-        if (screen) {
-            screen.classList.toggle("hidden", id !== screenId);
-        }
-    });
-}
-
-function setMessage(id, text) {
-    const element = document.getElementById(id);
-    if (element) {
-        element.textContent = text;
-    }
-}
-
-function shuffleArray(array) {
-    const copy = [...array];
-
-    for (let i = copy.length - 1; i > 0; i -= 1) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-
-    return copy;
-}
-
-function normalizeWord(value) {
-    return String(value).replace(/\s+/g, "").toUpperCase();
-}
+/* =========================
+   GAME FLOW
+========================= */
 
 function startGame() {
-    showScreen("wordle");
-    initWordle();
+  showGame("wordle");
+  startWordle();
 }
 
-/* =========================================================
+function showGame(game) {
+  const wordle = document.getElementById("wordleGame");
+  const connections = document.getElementById("connectionsGame");
+  const strands = document.getElementById("strandsGame");
+
+  if (wordle) wordle.style.display = "none";
+  if (connections) connections.style.display = "none";
+  if (strands) strands.style.display = "none";
+
+  if (game === "wordle" && wordle) wordle.style.display = "block";
+  if (game === "connections" && connections) connections.style.display = "block";
+  if (game === "strands" && strands) strands.style.display = "block";
+}
+
+
+/* =========================
    WORDLE
-   ========================================================= */
+========================= */
 
-const WORDLE_TARGET = "SORRY";
-const WORDLE_ROWS = 6;
-const WORDLE_COLS = 5;
-const KEYBOARD_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+const wordleAnswer = "SORRY";
 
-let wordleCurrentGuess = "";
-let wordleCurrentRow = 0;
-let wordleSolved = false;
-let wordleInitialized = false;
-let physicalKeyboardAttached = false;
+let wordleGuesses = [];
+let currentWordleGuess = "";
+let wordleGameOver = false;
 
-const wordleKeyStates = {};
+const wordleKeys = [
+  ["Q","W","E","R","T","Y","U","I","O","P"],
+  ["A","S","D","F","G","H","J","K","L"],
+  ["ENTER","Z","X","C","V","B","N","M","⌫"]
+];
 
-function initWordle() {
-    const board = document.getElementById("wordle-board");
-    if (!board) return;
+function startWordle() {
+  document.getElementById("gameTitle").textContent = "WORDLE";
+  document.getElementById("gameInstruction").textContent =
+    "Six tries. One word.";
 
-    if (wordleInitialized) return;
+  wordleGuesses = [];
+  currentWordleGuess = "";
+  wordleGameOver = false;
 
-    board.innerHTML = "";
-
-    for (let row = 0; row < WORDLE_ROWS; row += 1) {
-        for (let col = 0; col < WORDLE_COLS; col += 1) {
-            const tile = document.createElement("div");
-            tile.className = "wordle-tile";
-            tile.dataset.row = String(row);
-            tile.dataset.col = String(col);
-            tile.setAttribute("aria-label", `Wordle row ${row + 1}, letter ${col + 1}`);
-            board.appendChild(tile);
-        }
-    }
-
-    createWordleKeyboard();
-
-    if (!physicalKeyboardAttached) {
-        document.addEventListener("keydown", handlePhysicalKeyboard);
-        physicalKeyboardAttached = true;
-    }
-
-    setMessage("wordle-message", "Guess the five-letter word. Hint: the first thing I need to say.");
-    wordleInitialized = true;
+  renderWordle();
+  renderWordleKeyboard();
 }
 
-function createWordleKeyboard() {
-    const board = document.getElementById("wordle-board");
-    if (!board) return;
+function renderWordle() {
+  const board = document.getElementById("wordleBoard");
+  if (!board) return;
 
-    let keyboard = document.getElementById("wordle-keyboard");
+  board.innerHTML = "";
 
-    if (!keyboard) {
-        keyboard = document.createElement("div");
-        keyboard.id = "wordle-keyboard";
-        board.insertAdjacentElement("afterend", keyboard);
+  for (let row = 0; row < 6; row++) {
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "wordle-row";
+
+    const guess = wordleGuesses[row] || "";
+
+    for (let col = 0; col < 5; col++) {
+      const tile = document.createElement("div");
+      tile.className = "wordle-tile";
+
+      if (row < wordleGuesses.length) {
+        const letter = guess[col];
+        tile.textContent = letter;
+
+        const result = getWordleResult(guess, col);
+
+        if (result === "correct") {
+          tile.classList.add("correct");
+        } else if (result === "present") {
+          tile.classList.add("present");
+        } else {
+          tile.classList.add("absent");
+        }
+      } else if (row === wordleGuesses.length && col < currentWordleGuess.length) {
+        tile.textContent = currentWordleGuess[col];
+      }
+
+      rowDiv.appendChild(tile);
     }
 
-    keyboard.innerHTML = "";
+    board.appendChild(rowDiv);
+  }
+}
 
-    KEYBOARD_ROWS.forEach((letters, rowIndex) => {
-        const keyboardRow = document.createElement("div");
-        keyboardRow.className = "keyboard-row";
+function getWordleResult(guess, index) {
+  if (guess[index] === wordleAnswer[index]) {
+    return "correct";
+  }
 
-        if (rowIndex === 2) {
-            keyboardRow.appendChild(createWordleKey("ENTER", "wide-key"));
-        }
+  if (wordleAnswer.includes(guess[index])) {
+    return "present";
+  }
 
-        letters.split("").forEach((letter) => {
-            keyboardRow.appendChild(createWordleKey(letter));
-        });
+  return "absent";
+}
 
-        if (rowIndex === 2) {
-            keyboardRow.appendChild(createWordleKey("⌫", "wide-key"));
-        }
+function renderWordleKeyboard() {
+  const keyboard = document.getElementById("wordleKeyboard");
+  if (!keyboard) return;
 
-        keyboard.appendChild(keyboardRow);
+  keyboard.innerHTML = "";
+
+  wordleKeys.forEach(row => {
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "wordle-key-row";
+
+    row.forEach(key => {
+      const button = document.createElement("button");
+      button.className = "wordle-key";
+      button.textContent = key;
+
+      if (key === "ENTER" || key === "⌫") {
+        button.classList.add("wide");
+      }
+
+      /*
+       * Only grey out letters that are definitely absent.
+       * Correct/present letters remain their original keyboard colour.
+       */
+      if (
+        key.length === 1 &&
+        wordleGuesses.some(guess => {
+          const upperGuess = guess.toUpperCase();
+
+          for (let i = 0; i < upperGuess.length; i++) {
+            if (
+              upperGuess[i] === key &&
+              !wordleAnswer.includes(key)
+            ) {
+              return true;
+            }
+          }
+
+          return false;
+        })
+      ) {
+        button.classList.add("key-absent");
+      }
+
+      button.addEventListener("click", () => handleWordleKey(key));
+      rowDiv.appendChild(button);
     });
-}
 
-function createWordleKey(label, extraClass = "") {
-    const key = document.createElement("button");
-    key.type = "button";
-    key.className = `wordle-key ${extraClass}`.trim();
-    key.dataset.key = label;
-    key.textContent = label;
-    key.setAttribute("aria-label", label === "⌫" ? "Backspace" : label);
-    key.addEventListener("click", () => handleWordleKey(label));
-    return key;
-}
-
-function handlePhysicalKeyboard(event) {
-    const wordleScreen = document.getElementById("wordle");
-    if (!wordleScreen || wordleScreen.classList.contains("hidden")) return;
-
-    if (/^[a-zA-Z]$/.test(event.key)) {
-        event.preventDefault();
-        handleWordleKey(event.key.toUpperCase());
-        return;
-    }
-
-    if (event.key === "Enter") {
-        event.preventDefault();
-        handleWordleKey("ENTER");
-        return;
-    }
-
-    if (event.key === "Backspace") {
-        event.preventDefault();
-        handleWordleKey("⌫");
-    }
+    keyboard.appendChild(rowDiv);
+  });
 }
 
 function handleWordleKey(key) {
-    if (wordleSolved || wordleCurrentRow >= WORDLE_ROWS) return;
+  if (wordleGameOver) return;
 
-    if (key === "ENTER") {
-        submitWordleGuess();
-        return;
-    }
+  if (key === "ENTER") {
+    submitWordleGuess();
+    return;
+  }
 
-    if (key === "⌫") {
-        wordleCurrentGuess = wordleCurrentGuess.slice(0, -1);
-        drawCurrentWordleGuess();
-        return;
-    }
+  if (key === "⌫") {
+    currentWordleGuess = currentWordleGuess.slice(0, -1);
+    renderWordle();
+    return;
+  }
 
-    if (/^[A-Z]$/.test(key) && wordleCurrentGuess.length < WORDLE_COLS) {
-        wordleCurrentGuess += key;
-        drawCurrentWordleGuess();
-    }
-}
-
-function drawCurrentWordleGuess() {
-    for (let col = 0; col < WORDLE_COLS; col += 1) {
-        const tile = document.querySelector(
-            `.wordle-tile[data-row="${wordleCurrentRow}"][data-col="${col}"]`
-        );
-
-        if (tile) {
-            tile.textContent = wordleCurrentGuess[col] || "";
-        }
-    }
+  if (/^[A-Z]$/.test(key) && currentWordleGuess.length < 5) {
+    currentWordleGuess += key;
+    renderWordle();
+  }
 }
 
 function submitWordleGuess() {
-    if (wordleSolved || wordleCurrentRow >= WORDLE_ROWS) return;
+  if (currentWordleGuess.length !== 5) {
+    showGameMessage("wordleMessage", "You need five letters.");
+    return;
+  }
 
-    if (wordleCurrentGuess.length !== WORDLE_COLS) {
-        setMessage("wordle-message", "Almost there — enter five letters.");
-        shakeCurrentWordleRow();
-        return;
-    }
+  wordleGuesses.push(currentWordleGuess);
 
-    const score = scoreWordleGuess(wordleCurrentGuess, WORDLE_TARGET);
+  const submittedGuess = currentWordleGuess;
+  currentWordleGuess = "";
 
-    score.forEach((state, col) => {
-        const tile = document.querySelector(
-            `.wordle-tile[data-row="${wordleCurrentRow}"][data-col="${col}"]`
-        );
+  renderWordle();
+  renderWordleKeyboard();
 
-        if (tile) {
-            tile.classList.add(state);
-        }
+  if (submittedGuess === wordleAnswer) {
+    wordleGameOver = true;
 
-        updateWordleKeyState(wordleCurrentGuess[col], state);
-    });
+    setTimeout(() => {
+      showGameMessage(
+        "wordleMessage",
+        "SORRY. ❤️"
+      );
 
-    if (wordleCurrentGuess === WORDLE_TARGET) {
-        wordleSolved = true;
-        setMessage("wordle-message", "Yes. Sorry. I mean it completely.");
+      setTimeout(() => {
+        showGame("connections");
+        startConnections();
+      }, 2200);
+    }, 500);
 
-        setTimeout(() => {
-            showScreen("connections");
-            initConnections();
-        }, 1400);
+    return;
+  }
 
-        return;
-    }
+  if (wordleGuesses.length >= 6) {
+    wordleGameOver = true;
 
-    wordleCurrentRow += 1;
-    wordleCurrentGuess = "";
+    setTimeout(() => {
+      showGameMessage(
+        "wordleMessage",
+        "The answer was SORRY."
+      );
 
-    if (wordleCurrentRow >= WORDLE_ROWS) {
-        setMessage("wordle-message", `The word was ${WORDLE_TARGET}. I should have said it better from the start.`);
-
-        setTimeout(() => {
-            showScreen("connections");
-            initConnections();
-        }, 1800);
-    } else {
-        setMessage("wordle-message", "Keep going.");
-    }
+      setTimeout(() => {
+        showGame("connections");
+        startConnections();
+      }, 2200);
+    }, 500);
+  }
 }
 
-function shakeCurrentWordleRow() {
-    for (let col = 0; col < WORDLE_COLS; col += 1) {
-        const tile = document.querySelector(
-            `.wordle-tile[data-row="${wordleCurrentRow}"][data-col="${col}"]`
-        );
 
-        if (tile) {
-            tile.classList.add("invalid");
-            setTimeout(() => tile.classList.remove("invalid"), 400);
-        }
-    }
-}
-
-function scoreWordleGuess(guess, target) {
-    const result = Array(WORDLE_COLS).fill("absent");
-    const remainingLetters = target.split("");
-
-    for (let i = 0; i < WORDLE_COLS; i += 1) {
-        if (guess[i] === target[i]) {
-            result[i] = "correct";
-            remainingLetters[i] = null;
-        }
-    }
-
-    for (let i = 0; i < WORDLE_COLS; i += 1) {
-        if (result[i] === "correct") continue;
-
-        const matchingIndex = remainingLetters.indexOf(guess[i]);
-
-        if (matchingIndex !== -1) {
-            result[i] = "present";
-            remainingLetters[matchingIndex] = null;
-        }
-    }
-
-    return result;
-}
-
-function updateWordleKeyState(letter, state) {
-    const priority = {
-        absent: 1,
-        present: 2,
-        correct: 3
-    };
-
-    const currentState = wordleKeyStates[letter];
-
-    if ((priority[state] || 0) < (priority[currentState] || 0)) return;
-
-    wordleKeyStates[letter] = state;
-
-    const key = document.querySelector(`.wordle-key[data-key="${letter}"]`);
-    if (!key) return;
-
-    key.classList.remove("key-absent", "key-present", "key-correct");
-    key.classList.add(`key-${state}`);
-}
-
-/* =========================================================
+/* =========================
    CONNECTIONS
-   Original 4 groups kept intact + 6 total submissions
-   ========================================================= */
+========================= */
 
-const CONNECTION_GROUPS = [
-    {
-        title: "WHAT I OWE YOU",
-        words: ["HONESTY", "PATIENCE", "CARE", "EFFORT"]
-    },
-    {
-        title: "WHAT I WANT TO REBUILD",
-        words: ["TRUST", "SAFETY", "PEACE", "US"]
-    },
-    {
-        title: "DAILY PUZZLES",
-        words: ["WORDLE", "STRANDS", "MINI", "CONNECTIONS"]
-    },
-    {
-        title: "HOW I FEEL",
-        words: ["SORRY", "GRATEFUL", "HOPEFUL", "LOVING"]
-    }
+const connectionGroups = [
+  {
+    title: "Things I should have protected",
+    words: ["PROMISE", "TRUST", "SAFETY", "CONSIDERATION"],
+    message:
+      "You told me these things mattered to you.<br><br>" +
+      "I heard you.<br><br>" +
+      "But I did fail consistently translating hearing you into behaviour."
+  },
+  {
+    title: "Things I should have done more often",
+    words: ["TEXT", "UPDATE", "EFFORT", "SURPRISES"],
+    message:
+      "Communication isn't a grand romantic gesture.<br><br>" +
+      "It's the little things and living a shared life."
+  },
+  {
+    title: "Things I have learned from you",
+    words: [
+      "LOVE",
+      "STACK OF UNDENIABLE EVIDENCE",
+      "PERSEVERANCE",
+      "HOW TO BE A GOOD PARTNER"
+    ],
+    message:
+      "<strong>CORRECT.</strong><br><br>" +
+      "You are significantly more complicated than “boy who likes video games.”<br><br>" +
+      "I've spent more than four years learning from you and growing with you."
+  },
+  {
+    title: "Things I never want to take for granted",
+    words: ["MOVIES", "FOOD", "DATES", "MEMORIES"],
+    message:
+      "The life we've built isn't something I want to treat casually."
+  }
 ];
 
-const CONNECTION_MAX_TRIES = 6;
-
-let connectionTiles = [];
 let selectedConnectionWords = [];
 let solvedConnectionGroups = [];
-let connectionTriesUsed = 0;
-let connectionsInitialized = false;
-let connectionsLocked = false;
+let connectionAttempts = 0;
+const maxConnectionAttempts = 6;
+let connectionChecking = false;
 
-function initConnections() {
-    const grid = document.getElementById("connections-grid");
-    if (!grid) return;
+function startConnections() {
+  document.getElementById("gameTitle").textContent = "CONNECTIONS";
+  document.getElementById("gameInstruction").textContent =
+    "Find four groups of four.";
 
-    if (connectionsInitialized) return;
+  selectedConnectionWords = [];
+  solvedConnectionGroups = [];
+  connectionAttempts = 0;
+  connectionChecking = false;
 
-    connectionTiles = shuffleArray(CONNECTION_GROUPS.flatMap((group) => group.words));
-    selectedConnectionWords = [];
-    solvedConnectionGroups = [];
-    connectionTriesUsed = 0;
-    connectionsLocked = false;
-
-    createConnectionsControls();
-    renderConnections();
-    updateConnectionsMessage();
-
-    connectionsInitialized = true;
+  renderConnections();
+  showGameMessage("connectionsMessage", "");
 }
 
-function createConnectionsControls() {
-    const grid = document.getElementById("connections-grid");
-    if (!grid) return;
+function getRemainingConnectionWords() {
+  const words = [];
 
-    let controls = document.getElementById("connections-controls");
-
-    if (!controls) {
-        controls = document.createElement("div");
-        controls.id = "connections-controls";
-        controls.style.display = "flex";
-        controls.style.gap = "10px";
-        controls.style.justifyContent = "center";
-        controls.style.flexWrap = "wrap";
-        controls.style.margin = "0 auto 18px";
-
-        const submitButton = document.createElement("button");
-        submitButton.type = "button";
-        submitButton.id = "connections-submit";
-        submitButton.textContent = "SUBMIT";
-        submitButton.addEventListener("click", submitConnectionsGuess);
-
-        const shuffleButton = document.createElement("button");
-        shuffleButton.type = "button";
-        shuffleButton.id = "connections-shuffle";
-        shuffleButton.className = "secondary";
-        shuffleButton.textContent = "SHUFFLE";
-        shuffleButton.addEventListener("click", shuffleConnectionsTiles);
-
-        const deselectButton = document.createElement("button");
-        deselectButton.type = "button";
-        deselectButton.id = "connections-deselect";
-        deselectButton.className = "secondary";
-        deselectButton.textContent = "DESELECT";
-        deselectButton.addEventListener("click", deselectAllConnections);
-
-        controls.appendChild(submitButton);
-        controls.appendChild(shuffleButton);
-        controls.appendChild(deselectButton);
-
-        grid.insertAdjacentElement("afterend", controls);
+  connectionGroups.forEach((group, groupIndex) => {
+    if (!solvedConnectionGroups.includes(groupIndex)) {
+      group.words.forEach(word => {
+        words.push({
+          word,
+          groupIndex
+        });
+      });
     }
+  });
+
+  return words;
 }
 
 function renderConnections() {
-    const grid = document.getElementById("connections-grid");
-    if (!grid) return;
+  const grid = document.getElementById("connectionsGrid");
+  if (!grid) return;
 
-    grid.innerHTML = "";
+  grid.innerHTML = "";
 
-    solvedConnectionGroups.forEach((groupIndex) => {
-        const group = CONNECTION_GROUPS[groupIndex];
-        const solvedBox = document.createElement("div");
-        solvedBox.className = `connection-solved-group group-${groupIndex + 1}`;
+  /*
+   * Solved groups are rendered first as full-width boxes.
+   */
+  solvedConnectionGroups.forEach(groupIndex => {
+    const group = connectionGroups[groupIndex];
 
-        const title = document.createElement("div");
-        title.className = "solved-title";
-        title.textContent = group.title;
+    const solvedBox = document.createElement("div");
+    solvedBox.className =
+      `connection-solved-group group-${groupIndex + 1}`;
 
-        const words = document.createElement("div");
-        words.className = "solved-words";
-        words.textContent = group.words.join(", ");
+    const title = document.createElement("div");
+    title.className = "connection-solved-title";
+    title.textContent = group.title;
 
-        solvedBox.appendChild(title);
-        solvedBox.appendChild(words);
-        grid.appendChild(solvedBox);
+    const words = document.createElement("div");
+    words.className = "connection-solved-words";
+    words.textContent = group.words.join(" • ");
+
+    solvedBox.appendChild(title);
+    solvedBox.appendChild(words);
+
+    grid.appendChild(solvedBox);
+  });
+
+  /*
+   * Remaining tiles are freshly rendered every time.
+   * This fixes the issue where tiles became unclickable
+   * after solving the first group.
+   */
+  const remainingWords = getRemainingConnectionWords();
+
+  remainingWords.forEach(item => {
+    const button = document.createElement("button");
+    button.className = "connection-tile";
+    button.textContent = item.word;
+
+    if (selectedConnectionWords.includes(item.word)) {
+      button.classList.add("selected");
+    }
+
+    button.addEventListener("click", () => {
+      selectConnectionWord(item.word);
     });
 
-    connectionTiles.forEach((word) => {
-        const tile = document.createElement("button");
-        tile.type = "button";
-        tile.className = "connection-tile";
-        tile.textContent = word;
-        tile.dataset.word = word;
+    grid.appendChild(button);
+  });
 
-        if (selectedConnectionWords.includes(word)) {
-            tile.classList.add("selected");
-        }
-
-        tile.addEventListener("click", () => toggleConnectionWord(word));
-        grid.appendChild(tile);
-    });
-
-    updateConnectionsButtons();
+  updateConnectionStatus();
 }
 
-function toggleConnectionWord(word) {
-    if (connectionsLocked) return;
+function updateConnectionStatus() {
+  const status = document.getElementById("connectionsStatus");
+  if (!status) return;
 
-    if (selectedConnectionWords.includes(word)) {
-        selectedConnectionWords = selectedConnectionWords.filter((selected) => selected !== word);
-    } else {
-        if (selectedConnectionWords.length >= 4) {
-            setMessage("connections-message", "You can only select four words.");
-            return;
-        }
-
-        selectedConnectionWords.push(word);
-    }
-
-    renderConnections();
-    updateConnectionsMessage();
+  status.textContent =
+    `${selectedConnectionWords.length}/4 selected`;
 }
 
-function submitConnectionsGuess() {
-    if (connectionsLocked) return;
+function selectConnectionWord(word) {
+  if (connectionChecking) return;
 
-    if (selectedConnectionWords.length !== 4) {
-        setMessage("connections-message", `Select exactly four words. ${CONNECTION_MAX_TRIES - connectionTriesUsed} tries left.`);
-        return;
+  if (selectedConnectionWords.includes(word)) {
+    selectedConnectionWords =
+      selectedConnectionWords.filter(item => item !== word);
+  } else {
+    if (selectedConnectionWords.length >= 4) {
+      return;
     }
 
-    connectionTriesUsed += 1;
+    selectedConnectionWords.push(word);
+  }
 
-    const matchedGroupIndex = CONNECTION_GROUPS.findIndex((group, index) => {
-        if (solvedConnectionGroups.includes(index)) return false;
-        return selectedConnectionWords.every((word) => group.words.includes(word));
-    });
+  renderConnections();
 
-    if (matchedGroupIndex !== -1) {
-        solvedConnectionGroups.push(matchedGroupIndex);
-        connectionTiles = connectionTiles.filter(
-            (word) => !CONNECTION_GROUPS[matchedGroupIndex].words.includes(word)
-        );
-        selectedConnectionWords = [];
-        renderConnections();
+  if (selectedConnectionWords.length === 4) {
+    checkConnectionGroup();
+  }
+}
 
-        if (solvedConnectionGroups.length === CONNECTION_GROUPS.length) {
-            connectionsLocked = true;
-            updateConnectionsButtons();
-            setMessage("connections-message", "You found all four groups.");
+function checkConnectionGroup() {
+  if (connectionChecking) return;
 
-            setTimeout(() => {
-                showScreen("strands");
-                initStrands();
-            }, 1400);
+  connectionChecking = true;
 
-            return;
-        }
+  const selectedSet =
+    new Set(selectedConnectionWords);
 
-        updateConnectionsMessage(`Correct: ${CONNECTION_GROUPS[matchedGroupIndex].title}.`);
-        return;
+  let matchedGroupIndex = -1;
+
+  connectionGroups.forEach((group, index) => {
+    if (solvedConnectionGroups.includes(index)) return;
+
+    const groupSet = new Set(group.words);
+
+    if (
+      group.words.length === selectedSet.size &&
+      group.words.every(word => selectedSet.has(word))
+    ) {
+      matchedGroupIndex = index;
+    }
+  });
+
+  if (matchedGroupIndex !== -1) {
+    setTimeout(() => {
+      revealConnectionGroup(matchedGroupIndex);
+    }, 450);
+  } else {
+    connectionAttempts++;
+
+    const grid = document.getElementById("connectionsGrid");
+
+    if (grid) {
+      grid.classList.add("connection-wrong");
+
+      setTimeout(() => {
+        grid.classList.remove("connection-wrong");
+      }, 500);
     }
 
-    flashWrongConnectionTiles();
-    selectedConnectionWords = [];
+    setTimeout(() => {
+      selectedConnectionWords = [];
+      connectionChecking = false;
 
-    if (connectionTriesUsed >= CONNECTION_MAX_TRIES) {
-        connectionsLocked = true;
-        revealRemainingConnectionGroups();
-        renderConnections();
-        updateConnectionsButtons();
-        setMessage("connections-message", "That was the last try. Here are the groups.");
+      renderConnections();
 
+      if (connectionAttempts >= maxConnectionAttempts) {
         setTimeout(() => {
-            showScreen("strands");
-            initStrands();
-        }, 2200);
+          revealRemainingConnections();
+        }, 700);
+      } else {
+        showGameMessage(
+          "connectionsMessage",
+          `Not quite. ${maxConnectionAttempts - connectionAttempts} tries left.`
+        );
+      }
+    }, 550);
+  }
+}
 
-        return;
+function revealConnectionGroup(groupIndex) {
+  if (solvedConnectionGroups.includes(groupIndex)) return;
+
+  solvedConnectionGroups.push(groupIndex);
+  selectedConnectionWords = [];
+  connectionChecking = false;
+
+  renderConnections();
+
+  const group = connectionGroups[groupIndex];
+
+  showGameMessage(
+    "connectionsMessage",
+    group.message
+  );
+
+  if (solvedConnectionGroups.length === 4) {
+    setTimeout(() => {
+      showGame("strands");
+      startStrands();
+    }, 4000);
+  }
+}
+
+function revealRemainingConnections() {
+  connectionChecking = false;
+
+  connectionGroups.forEach((group, index) => {
+    if (!solvedConnectionGroups.includes(index)) {
+      solvedConnectionGroups.push(index);
     }
+  });
 
-    renderConnections();
-    updateConnectionsMessage("Not quite. Try another connection.");
+  selectedConnectionWords = [];
+
+  renderConnections();
+
+  showGameMessage(
+    "connectionsMessage",
+    "Sometimes the point isn't getting every answer right.<br><br>" +
+    "Sometimes it's understanding what the answers mean."
+  );
+
+  setTimeout(() => {
+    showGame("strands");
+    startStrands();
+  }, 5000);
 }
 
-function flashWrongConnectionTiles() {
-    selectedConnectionWords.forEach((word) => {
-        const tile = document.querySelector(`.connection-tile[data-word="${CSS.escape(word)}"]`);
-        if (tile) {
-            tile.classList.add("wrong");
-            setTimeout(() => tile.classList.remove("wrong"), 450);
-        }
-    });
-}
 
-function shuffleConnectionsTiles() {
-    if (connectionsLocked) return;
-    connectionTiles = shuffleArray(connectionTiles);
-    renderConnections();
-}
-
-function deselectAllConnections() {
-    if (connectionsLocked) return;
-    selectedConnectionWords = [];
-    renderConnections();
-    updateConnectionsMessage();
-}
-
-function revealRemainingConnectionGroups() {
-    CONNECTION_GROUPS.forEach((group, index) => {
-        if (!solvedConnectionGroups.includes(index)) {
-            solvedConnectionGroups.push(index);
-        }
-    });
-
-    connectionTiles = [];
-    selectedConnectionWords = [];
-}
-
-function updateConnectionsMessage(prefix = "") {
-    const triesLeft = CONNECTION_MAX_TRIES - connectionTriesUsed;
-    const solvedCount = solvedConnectionGroups.length;
-    const selectedCount = selectedConnectionWords.length;
-
-    const base = `${triesLeft} ${triesLeft === 1 ? "try" : "tries"} left. ${solvedCount}/4 groups solved. ${selectedCount}/4 selected.`;
-    setMessage("connections-message", prefix ? `${prefix} ${base}` : base);
-}
-
-function updateConnectionsButtons() {
-    const submitButton = document.getElementById("connections-submit");
-    const shuffleButton = document.getElementById("connections-shuffle");
-    const deselectButton = document.getElementById("connections-deselect");
-
-    if (submitButton) {
-        submitButton.disabled = connectionsLocked || selectedConnectionWords.length !== 4;
-    }
-
-    if (shuffleButton) {
-        shuffleButton.disabled = connectionsLocked;
-    }
-
-    if (deselectButton) {
-        deselectButton.disabled = connectionsLocked || selectedConnectionWords.length === 0;
-    }
-}
-
-/* =========================================================
+/* =========================
    STRANDS
-   Theme: How I see you
-   Words: HUSBAND, LIFE PARTNER, COACH, THERAPIST,
-          LIFE OF THE PARTY, PROTECTOR
-   ========================================================= */
+   UPDATED ONLY
+========================= */
 
-const STRANDS_THEME = "How I see you";
-const STRANDS_WORDS = [
-    "HUSBAND",
-    "LIFE PARTNER",
-    "COACH",
-    "THERAPIST",
-    "LIFE OF THE PARTY",
-    "PROTECTOR"
+const strandsWords = [
+  "LIFE PARTNER",
+  "HUSBAND",
+  "PROTECTOR",
+  "THERAPIST",
+  "COACH",
+  "LIFE OF THE PARTY"
 ];
 
-const STRANDS_ROWS = 8;
-const STRANDS_COLS = 8;
-
-const STRANDS_LAYOUT = [
-    ["H", "U", "S", "B", "A", "N", "D", "X"],
-    ["R", "E", "N", "T", "R", "A", "P", "E"],
-    ["W", "Q", "L", "I", "F", "E", "M", "T"],
-    ["P", "R", "O", "T", "E", "C", "T", "O"],
-    ["H", "C", "A", "O", "C", "H", "R", "P"],
-    ["T", "Y", "A", "P", "A", "R", "T", "Y"],
-    ["H", "E", "R", "A", "P", "I", "S", "T"],
-    ["L", "I", "F", "E", "O", "F", "T", "H"]
+/*
+ * Spaces are ignored when building/searching the board.
+ */
+const strandsSearchWords = [
+  "LIFEPARTNER",
+  "HUSBAND",
+  "PROTECTOR",
+  "THERAPIST",
+  "COACH",
+  "LIFEOFTHEPARTY"
 ];
 
-const STRANDS_PATHS = {
-    HUSBAND: [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6]],
-    LIFEPARTNER: [[2, 2], [2, 3], [2, 4], [2, 5], [1, 6], [1, 5], [1, 4], [1, 3], [1, 2], [1, 1], [1, 0]],
-    COACH: [[4, 4], [4, 3], [4, 2], [4, 1], [4, 0]],
-    THERAPIST: [[7, 6], [6, 7], [6, 6], [6, 5], [6, 4], [6, 3], [6, 2], [6, 1], [6, 0]],
-    LIFEOFTHEPARTY: [[7, 0], [7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7], [6, 7], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3]],
-    PROTECTOR: [[3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7], [4, 7]]
+/*
+ * 11 x 11 board.
+ *
+ * Each of the six answers is placed as a connected
+ * horizontal path. The remaining letters are filler.
+ */
+const strandsBoardLetters = [
+  "QXMZPLKJHVR",
+  "LIFEPARTNER",
+  "ZKXQMBRPLSD",
+  "HUSBANDQWEQ",
+  "PROTECTORAB",
+  "THERAPISTXY",
+  "COACHQWERTY",
+  "LIFEOFTHEPARTY",
+  "ZXCVBNMASDF",
+  "GHJKLQWERTYU",
+  "POIUYTRMNBC"
+];
+
+/*
+ * We use a larger board for LIFE OF THE PARTY,
+ * so the playable board is 14 columns x 11 rows.
+ *
+ * Every row is normalised to 14 cells.
+ */
+const strandsBoard = [
+  "QXMZPLKJHVRQWE",
+  "LIFEPARTNERQWE",
+  "ZKXQMBRPLSDABC",
+  "HUSBANDQWERTYU",
+  "PROTECTORABCDE",
+  "THERAPISTXYZAB",
+  "COACHQWERTYUIO",
+  "LIFEOFTHEPARTY",
+  "ZXCVBNMASDFGHJ",
+  "GHJKLQWERTYUIO",
+  "POIUYTRMNBCVXZ"
+];
+
+const strandsPaths = {
+  "LIFE PARTNER": [
+    14,15,16,17,18,19,20,21,22,23,24
+  ],
+
+  "HUSBAND": [
+    42,43,44,45,46,47,48
+  ],
+
+  "PROTECTOR": [
+    56,57,58,59,60,61,62,63,64
+  ],
+
+  "THERAPIST": [
+    70,71,72,73,74,75,76,77,78
+  ],
+
+  "COACH": [
+    84,85,86,87,88
+  ],
+
+  "LIFE OF THE PARTY": [
+    98,99,100,101,102,103,104,105,106,107,108,109,110,111
+  ]
 };
 
-let strandsInitialized = false;
-let selectedStrandCells = [];
-let foundStrandWords = [];
-let foundStrandCellKeys = new Set();
+let strandsFound = new Set();
+let strandsSelected = [];
+let strandsAttempts = 0;
+let strandsGameOver = false;
 
-function initStrands() {
-    const board = document.getElementById("strands-board");
-    if (!board) return;
+function startStrands() {
+  document.getElementById("gameTitle").textContent = "STRANDS";
 
-    if (strandsInitialized) return;
+  /*
+   * The user specifically wanted him to know there
+   * are six words to find.
+   */
+  document.getElementById("gameInstruction").textContent =
+    "HOW I VIEW YOU — Find all 6 words.";
 
-    selectedStrandCells = [];
-    foundStrandWords = [];
-    foundStrandCellKeys = new Set();
+  strandsFound = new Set();
+  strandsSelected = [];
+  strandsAttempts = 0;
+  strandsGameOver = false;
 
-    createStrandsHeader();
-    createStrandsControls();
-    renderStrandsBoard();
-    updateStrandsMessage();
+  renderStrands();
 
-    strandsInitialized = true;
+  showGameMessage(
+    "strandsMessage",
+    "Unlimited tries."
+  );
 }
 
-function createStrandsHeader() {
-    const strandsScreen = document.getElementById("strands");
-    const board = document.getElementById("strands-board");
-    if (!strandsScreen || !board) return;
+function renderStrands() {
+  const board = document.getElementById("strandsBoard");
+  if (!board) return;
 
-    let themeBox = document.getElementById("strands-theme-box");
+  board.innerHTML = "";
 
-    if (!themeBox) {
-        themeBox = document.createElement("div");
-        themeBox.id = "strands-theme-box";
-        themeBox.style.margin = "0 auto 16px";
-        themeBox.style.maxWidth = "520px";
-        themeBox.style.fontFamily = "Arial, sans-serif";
-        themeBox.style.lineHeight = "1.5";
-        board.insertAdjacentElement("beforebegin", themeBox);
-    }
+  strandsBoard.forEach((row, rowIndex) => {
+    [...row].forEach((letter, colIndex) => {
+      const index = rowIndex * 14 + colIndex;
 
-    themeBox.innerHTML = `
-        <div style="font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #7d1f2c; font-weight: 700; margin-bottom: 6px;">
-            Theme
-        </div>
-        <div style="font-size: 22px; font-weight: 800; margin-bottom: 6px;">
-            ${STRANDS_THEME}
-        </div>
-        <div id="strands-counter" style="font-size: 14px; color: #5d5550;">
-            Find 6 words. 0/6 found.
-        </div>
-    `;
+      const button = document.createElement("button");
+      button.className = "strands-letter";
+      button.textContent = letter;
+
+      if (strandsSelected.includes(index)) {
+        button.classList.add("selected");
+      }
+
+      const foundWord = getFoundWordForIndex(index);
+
+      if (foundWord) {
+        button.classList.add("found");
+      }
+
+      button.addEventListener("click", () => {
+        selectStrandsLetter(index);
+      });
+
+      board.appendChild(button);
+    });
+  });
+
+  updateStrandsStatus();
 }
 
-function createStrandsControls() {
-    const board = document.getElementById("strands-board");
-    if (!board) return;
+function getFoundWordForIndex(index) {
+  for (const word of strandsFound) {
+    const path = strandsPaths[word];
 
-    let controls = document.getElementById("strands-controls");
-
-    if (!controls) {
-        controls = document.createElement("div");
-        controls.id = "strands-controls";
-        controls.style.display = "flex";
-        controls.style.gap = "10px";
-        controls.style.justifyContent = "center";
-        controls.style.flexWrap = "wrap";
-        controls.style.margin = "0 auto 18px";
-
-        const submitButton = document.createElement("button");
-        submitButton.type = "button";
-        submitButton.id = "strands-submit";
-        submitButton.textContent = "SUBMIT";
-        submitButton.addEventListener("click", submitStrandsSelection);
-
-        const clearButton = document.createElement("button");
-        clearButton.type = "button";
-        clearButton.id = "strands-clear";
-        clearButton.className = "secondary";
-        clearButton.textContent = "CLEAR";
-        clearButton.addEventListener("click", clearStrandsSelection);
-
-        controls.appendChild(submitButton);
-        controls.appendChild(clearButton);
-        board.insertAdjacentElement("afterend", controls);
+    if (path && path.includes(index)) {
+      return word;
     }
+  }
+
+  return null;
 }
 
-function renderStrandsBoard() {
-    const board = document.getElementById("strands-board");
-    if (!board) return;
+function areStrandsAdjacent(index1, index2) {
+  const row1 = Math.floor(index1 / 14);
+  const col1 = index1 % 14;
 
-    board.innerHTML = "";
-    board.style.gridTemplateColumns = `repeat(${STRANDS_COLS}, 1fr)`;
+  const row2 = Math.floor(index2 / 14);
+  const col2 = index2 % 14;
 
-    for (let row = 0; row < STRANDS_ROWS; row += 1) {
-        for (let col = 0; col < STRANDS_COLS; col += 1) {
-            const cell = document.createElement("button");
-            cell.type = "button";
-            cell.className = "strand-letter";
-            cell.textContent = STRANDS_LAYOUT[row][col];
-            cell.dataset.row = String(row);
-            cell.dataset.col = String(col);
-            cell.dataset.key = getStrandCellKey(row, col);
-            cell.setAttribute("aria-label", `Letter ${STRANDS_LAYOUT[row][col]} at row ${row + 1}, column ${col + 1}`);
-
-            if (foundStrandCellKeys.has(cell.dataset.key)) {
-                cell.classList.add("found");
-            }
-
-            if (selectedStrandCells.some((selected) => selected.row === row && selected.col === col)) {
-                cell.classList.add("selected");
-            }
-
-            cell.addEventListener("click", () => toggleStrandCell(row, col));
-            board.appendChild(cell);
-        }
-    }
-
-    updateStrandsButtons();
-    updateStrandsCounter();
+  return (
+    Math.abs(row1 - row2) <= 1 &&
+    Math.abs(col1 - col2) <= 1 &&
+    !(row1 === row2 && col1 === col2)
+  );
 }
 
-function toggleStrandCell(row, col) {
-    const key = getStrandCellKey(row, col);
+function selectStrandsLetter(index) {
+  if (strandsGameOver) return;
 
-    if (foundStrandCellKeys.has(key)) {
-        setMessage("strands-message", "That letter is already part of a found word.");
-        return;
-    }
+  if (strandsFound.size === strandsWords.length) return;
 
-    const existingIndex = selectedStrandCells.findIndex(
-        (cell) => cell.row === row && cell.col === col
+  /*
+   * Clicking an already-selected letter removes it.
+   */
+  if (strandsSelected.includes(index)) {
+    strandsSelected = strandsSelected.filter(
+      selected => selected !== index
     );
 
-    if (existingIndex !== -1) {
-        selectedStrandCells = selectedStrandCells.slice(0, existingIndex);
-        renderStrandsBoard();
-        updateStrandsMessage();
-        return;
+    renderStrands();
+    return;
+  }
+
+  /*
+   * A new letter must be adjacent to the previous one.
+   */
+  if (strandsSelected.length > 0) {
+    const previous =
+      strandsSelected[strandsSelected.length - 1];
+
+    if (!areStrandsAdjacent(previous, index)) {
+      showGameMessage(
+        "strandsMessage",
+        "Letters need to connect."
+      );
+      return;
     }
+  }
 
-    if (selectedStrandCells.length > 0) {
-        const previousCell = selectedStrandCells[selectedStrandCells.length - 1];
+  strandsSelected.push(index);
 
-        if (!areAdjacentStrandCells(previousCell, { row, col })) {
-            setMessage("strands-message", "Choose touching letters, just like Strands.");
-            return;
-        }
-    }
+  renderStrands();
 
-    selectedStrandCells.push({ row, col });
-    renderStrandsBoard();
-    updateStrandsMessage();
+  checkSelectedStrandsWord();
 }
 
-function submitStrandsSelection() {
-    if (selectedStrandCells.length === 0) {
-        setMessage("strands-message", "Select letters to make a word.");
-        return;
-    }
+function getSelectedStrandsText() {
+  return strandsSelected
+    .map(index => {
+      const row = Math.floor(index / 14);
+      const col = index % 14;
 
-    const selectedWord = selectedStrandCells
-        .map((cell) => STRANDS_LAYOUT[cell.row][cell.col])
-        .join("");
-
-    const reversedWord = selectedWord.split("").reverse().join("");
-    const normalizedTargets = STRANDS_WORDS.map(normalizeWord);
-
-    let foundNormalizedWord = "";
-
-    if (normalizedTargets.includes(selectedWord)) {
-        foundNormalizedWord = selectedWord;
-    } else if (normalizedTargets.includes(reversedWord)) {
-        foundNormalizedWord = reversedWord;
-    }
-
-    if (!foundNormalizedWord) {
-        setMessage("strands-message", `"${selectedWord}" is not one of the hidden words.`);
-        clearStrandsSelection(false);
-        return;
-    }
-
-    if (foundStrandWords.includes(foundNormalizedWord)) {
-        setMessage("strands-message", "You already found that word.");
-        clearStrandsSelection(false);
-        return;
-    }
-
-    foundStrandWords.push(foundNormalizedWord);
-
-    selectedStrandCells.forEach((cell) => {
-        foundStrandCellKeys.add(getStrandCellKey(cell.row, cell.col));
-    });
-
-    const displayWord = STRANDS_WORDS.find((word) => normalizeWord(word) === foundNormalizedWord) || foundNormalizedWord;
-    selectedStrandCells = [];
-    renderStrandsBoard();
-
-    if (foundStrandWords.length === STRANDS_WORDS.length) {
-        setMessage("strands-message", "You found all 6 words. That is exactly how I see you.");
-
-        setTimeout(() => {
-            showScreen("final");
-        }, 1600);
-
-        return;
-    }
-
-    setMessage("strands-message", `Found: ${displayWord}. ${STRANDS_WORDS.length - foundStrandWords.length} left.`);
+      return strandsBoard[row][col];
+    })
+    .join("");
 }
 
-function clearStrandsSelection(showDefaultMessage = true) {
-    selectedStrandCells = [];
-    renderStrandsBoard();
+function checkSelectedStrandsWord() {
+  const selectedText = getSelectedStrandsText();
 
-    if (showDefaultMessage) {
-        updateStrandsMessage();
-    }
+  const matchingWord = strandsSearchWords.find(
+    searchWord => searchWord === selectedText
+  );
+
+  if (!matchingWord) return;
+
+  const wordIndex =
+    strandsSearchWords.indexOf(matchingWord);
+
+  const actualWord =
+    strandsWords[wordIndex];
+
+  if (strandsFound.has(actualWord)) return;
+
+  strandsFound.add(actualWord);
+  strandsAttempts++;
+
+  strandsSelected = [];
+
+  renderStrands();
+
+  showGameMessage(
+    "strandsMessage",
+    `<strong>${actualWord}</strong> found.`
+  );
+
+  if (strandsFound.size === strandsWords.length) {
+    setTimeout(() => {
+      finishStrands();
+    }, 1000);
+  }
 }
 
-function areAdjacentStrandCells(a, b) {
-    const rowDistance = Math.abs(a.row - b.row);
-    const colDistance = Math.abs(a.col - b.col);
-    return rowDistance <= 1 && colDistance <= 1 && rowDistance + colDistance > 0;
+function updateStrandsStatus() {
+  const status = document.getElementById("strandsStatus");
+  if (!status) return;
+
+  status.textContent =
+    `${strandsFound.size}/6 words found`;
 }
 
-function getStrandCellKey(row, col) {
-    return `${row}-${col}`;
+function finishStrands() {
+  if (strandsGameOver) return;
+
+  strandsGameOver = true;
+  strandsSelected = [];
+
+  renderStrands();
+
+  showGameMessage(
+    "strandsMessage",
+    "<strong>HOW I VIEW YOU</strong><br><br>" +
+    "Six words. Six ways I see you.<br><br>" +
+    "And somehow, even these six don't quite cover it."
+  );
+
+  setTimeout(() => {
+    finishGame();
+  }, 4000);
 }
 
-function updateStrandsMessage() {
-    const selectedWord = selectedStrandCells
-        .map((cell) => STRANDS_LAYOUT[cell.row][cell.col])
-        .join("");
 
-    const foundDisplayWords = foundStrandWords.map((normalizedWord) => {
-        return STRANDS_WORDS.find((word) => normalizeWord(word) === normalizedWord) || normalizedWord;
-    });
+/* =========================
+   FINAL MESSAGE
+========================= */
 
-    if (selectedWord) {
-        setMessage("strands-message", `Selected: ${selectedWord}`);
-        return;
-    }
+function finishGame() {
+  const gameContainer =
+    document.getElementById("gameContainer");
 
-    if (foundDisplayWords.length > 0) {
-        setMessage("strands-message", `Found ${foundDisplayWords.length}/6: ${foundDisplayWords.join(", ")}`);
-        return;
-    }
+  if (gameContainer) {
+    gameContainer.innerHTML = `
+      <div class="final-message">
+        <h1>I'm sorry.</h1>
 
-    setMessage("strands-message", "Find 6 hidden words. Theme: How I see you.");
+        <p>
+          Not because I want to tick off a list of things
+          I should have done differently —
+          but because you matter to me,
+          and so does everything we've built together.
+        </p>
+
+        <p>
+          I love you. ❤️
+        </p>
+      </div>
+    `;
+
+    return;
+  }
+
+  /*
+   * Fallback if your HTML uses a different final-message
+   * container.
+   */
+  document.getElementById("gameTitle").textContent =
+    "I'm sorry.";
+
+  document.getElementById("gameInstruction").innerHTML =
+    "Not because I want to tick off a list of things I should have done differently — " +
+    "but because you matter to me, and so does everything we've built together.<br><br>" +
+    "I love you. ❤️";
 }
 
-function updateStrandsCounter() {
-    const counter = document.getElementById("strands-counter");
-    if (counter) {
-        counter.textContent = `Find 6 words. ${foundStrandWords.length}/6 found.`;
-    }
+
+/* =========================
+   MESSAGE HELPER
+========================= */
+
+function showGameMessage(elementId, message) {
+  const element = document.getElementById(elementId);
+
+  if (element) {
+    element.innerHTML = message;
+  }
 }
 
-function updateStrandsButtons() {
-    const submitButton = document.getElementById("strands-submit");
-    const clearButton = document.getElementById("strands-clear");
 
-    if (submitButton) {
-        submitButton.disabled = selectedStrandCells.length === 0;
-    }
+/* =========================
+   INITIALISE
+========================= */
 
-    if (clearButton) {
-        clearButton.disabled = selectedStrandCells.length === 0;
-    }
-}
-
+document.addEventListener("DOMContentLoaded", () => {
+  /*
+   * The game starts when the existing Start button
+   * calls startGame().
+   */
+});
 /* =========================================================
    GLOBAL FALLBACKS
    These expose functions for inline onclick attributes.
