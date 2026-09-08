@@ -1152,55 +1152,62 @@ function updateConnectionsMessage(
    STRANDS
    ========================================================= */
 
-const strandsRows = [
-
-    "QXMRPLZKJHV",
-    "PATIENCEQWE",
-    "ZKXQMBRPLSD",
-    "QHONESTYABC",
-    "EFFORTQWXYZ",
-    "CONSISTENCY",
-    "ABCDTRUSTXY",
-    "LMNOPQRSUVW",
-    "ZXCVBNMASDF",
-    "GHJKLQWERTY",
-    "POIUYTRMNBC"
-
+const strandsSearchWords = [
+  "LIFEPARTNER",
+  "HUSBAND",
+  "PROTECTOR",
+  "THERAPIST",
+  "COACH",
+  "LIFEOFTHEPARTY"
 ];
 
+const strandsBoard = [
+  "QXMZPLKJHVRQWE",
+  "LIFEPARTNERQWE",
+  "ZKXQMBRPLSDABC",
+  "HUSBANDQWERTYU",
+  "PROTECTORABCDE",
+  "THERAPISTXYZAB",
+  "COACHQWERTYUIO",
+  "LIFEOFTHEPARTY",
+  "ZXCVBNMASDFGHJ",
+  "GHJKLQWERTYUIO",
+  "POIUYTRMNBCVXZ"
+];
 
-const strandsWordPaths = {
+const strandsPaths = {
+  "LIFE PARTNER": [
+    14,15,16,17,18,19,20,21,22,23,24
+  ],
 
-    "PATIENCE":
-        [11,12,13,14,15,16,17,18],
+  "HUSBAND": [
+    42,43,44,45,46,47,48
+  ],
 
-    "HONESTY":
-        [34,35,36,37,38,39,40],
+  "PROTECTOR": [
+    56,57,58,59,60,61,62,63,64
+  ],
 
-    "EFFORT":
-        [44,45,46,47,48,49],
+  "THERAPIST": [
+    70,71,72,73,74,75,76,77,78
+  ],
 
-    "CONSISTENCY":
-        [55,56,57,58,59,60,61,62,63,64,65],
+  "COACH": [
+    84,85,86,87,88
+  ],
 
-    "TRUST":
-        [70,71,72,73,74]
-
+  "LIFE OF THE PARTY": [
+    98,99,100,101,102,103,104,105,106,107,108,109,110,111
+  ]
 };
 
-
-const strandsWords =
-    Object.keys(
-        strandsWordPaths
-    );
-
-
-let selectedStrandIndices = [];
-
-let foundStrandWords = [];
-
+let strandsFound = new Set();
+let strandsSelected = [];
 let strandsAttempts = 0;
+let strandsGameOver = false;
 
+function startStrands() {
+  document.getElementById("gameTitle").textContent = "STRANDS";
 
 /* ---------- SHOW STRANDS ---------- */
 
