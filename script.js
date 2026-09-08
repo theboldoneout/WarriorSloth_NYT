@@ -1,8 +1,3 @@
-/* APOLOGY GAMES */
-
-/* =========================
-   GAME FLOW
-========================= */
 const SCREENS = ["intro", "wordle", "connections", "strands", "final"];
 
 function showScreen(screenId) {
@@ -32,6 +27,10 @@ function shuffleArray(array) {
     return copy;
 }
 
+function normalizeWord(value) {
+    return String(value).replace(/\s+/g, "").toUpperCase();
+}
+
 function startGame() {
     showScreen("wordle");
     initWordle();
@@ -41,7 +40,7 @@ function startGame() {
    WORDLE
    ========================================================= */
 
-const WORDLE_TARGET = "TRUST";
+const WORDLE_TARGET = "SORRY";
 const WORDLE_ROWS = 6;
 const WORDLE_COLS = 5;
 const KEYBOARD_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
@@ -68,6 +67,7 @@ function initWordle() {
             tile.className = "wordle-tile";
             tile.dataset.row = String(row);
             tile.dataset.col = String(col);
+            tile.setAttribute("aria-label", `Wordle row ${row + 1}, letter ${col + 1}`);
             board.appendChild(tile);
         }
     }
@@ -79,7 +79,7 @@ function initWordle() {
         physicalKeyboardAttached = true;
     }
 
-    setMessage("wordle-message", "Guess the five-letter word. Hint: what I need to rebuild.");
+    setMessage("wordle-message", "Guess the five-letter word. Hint: the first thing I need to say.");
     wordleInitialized = true;
 }
 
@@ -123,6 +123,7 @@ function createWordleKey(label, extraClass = "") {
     key.className = `wordle-key ${extraClass}`.trim();
     key.dataset.key = label;
     key.textContent = label;
+    key.setAttribute("aria-label", label === "⌫" ? "Backspace" : label);
     key.addEventListener("click", () => handleWordleKey(label));
     return key;
 }
@@ -132,16 +133,19 @@ function handlePhysicalKeyboard(event) {
     if (!wordleScreen || wordleScreen.classList.contains("hidden")) return;
 
     if (/^[a-zA-Z]$/.test(event.key)) {
+        event.preventDefault();
         handleWordleKey(event.key.toUpperCase());
         return;
     }
 
     if (event.key === "Enter") {
+        event.preventDefault();
         handleWordleKey("ENTER");
         return;
     }
 
     if (event.key === "Backspace") {
+        event.preventDefault();
         handleWordleKey("⌫");
     }
 }
@@ -183,6 +187,7 @@ function submitWordleGuess() {
 
     if (wordleCurrentGuess.length !== WORDLE_COLS) {
         setMessage("wordle-message", "Almost there — enter five letters.");
+        shakeCurrentWordleRow();
         return;
     }
 
@@ -202,7 +207,7 @@ function submitWordleGuess() {
 
     if (wordleCurrentGuess === WORDLE_TARGET) {
         wordleSolved = true;
-        setMessage("wordle-message", "Yes. Trust. That is what I need to earn back.");
+        setMessage("wordle-message", "Yes. Sorry. I mean it completely.");
 
         setTimeout(() => {
             showScreen("connections");
@@ -216,7 +221,7 @@ function submitWordleGuess() {
     wordleCurrentGuess = "";
 
     if (wordleCurrentRow >= WORDLE_ROWS) {
-        setMessage("wordle-message", `The word was ${WORDLE_TARGET}. I know I have to rebuild it.`);
+        setMessage("wordle-message", `The word was ${WORDLE_TARGET}. I should have said it better from the start.`);
 
         setTimeout(() => {
             showScreen("connections");
@@ -224,6 +229,19 @@ function submitWordleGuess() {
         }, 1800);
     } else {
         setMessage("wordle-message", "Keep going.");
+    }
+}
+
+function shakeCurrentWordleRow() {
+    for (let col = 0; col < WORDLE_COLS; col += 1) {
+        const tile = document.querySelector(
+            `.wordle-tile[data-row="${wordleCurrentRow}"][data-col="${col}"]`
+        );
+
+        if (tile) {
+            tile.classList.add("invalid");
+            setTimeout(() => tile.classList.remove("invalid"), 400);
+        }
     }
 }
 
@@ -274,6 +292,7 @@ function updateWordleKeyState(letter, state) {
 
 /* =========================================================
    CONNECTIONS
+   Original 4 groups kept intact + 6 total submissions
    ========================================================= */
 
 const CONNECTION_GROUPS = [
@@ -295,10 +314,14 @@ const CONNECTION_GROUPS = [
     }
 ];
 
+const CONNECTION_MAX_TRIES = 6;
+
 let connectionTiles = [];
 let selectedConnectionWords = [];
-let solvedConnectionTitles = [];
+let solvedConnectionGroups = [];
+let connectionTriesUsed = 0;
 let connectionsInitialized = false;
+let connectionsLocked = false;
 
 function initConnections() {
     const grid = document.getElementById("connections-grid");
@@ -306,67 +329,17 @@ function initConnections() {
 
     if (connectionsInitialized) return;
 
-    connectionTiles = shuffleArray(
-        CONNECTION_GROUPS.flatMap((group) =>
-            group.words.map((word) => ({
-                word,
-                title: group.title
-            }))
-        )
-    );
-
+    connectionTiles = shuffleArray(CONNECTION_GROUPS.flatMap((group) => group.words));
     selectedConnectionWords = [];
-    solvedConnectionTitles = [];
+    solvedConnectionGroups = [];
+    connectionTriesUsed = 0;
+    connectionsLocked = false;
 
-    drawConnections();
     createConnectionsControls();
-    setMessage("connections-message", "Select four related words, then submit.");
+    renderConnections();
+    updateConnectionsMessage();
 
     connectionsInitialized = true;
-}
-
-function drawConnections() {
-    const grid = document.getElementById("connections-grid");
-    if (!grid) return;
-
-    grid.innerHTML = "";
-
-    solvedConnectionTitles.forEach((title, index) => {
-        const group = CONNECTION_GROUPS.find((item) => item.title === title);
-        if (!group) return;
-
-        const solvedGroup = document.createElement("div");
-        solvedGroup.className = `connection-solved-group group-${index + 1}`;
-
-        const solvedTitle = document.createElement("div");
-        solvedTitle.className = "solved-title";
-        solvedTitle.textContent = group.title;
-
-        const solvedWords = document.createElement("div");
-        solvedWords.className = "solved-words";
-        solvedWords.textContent = group.words.join(" · ");
-
-        solvedGroup.appendChild(solvedTitle);
-        solvedGroup.appendChild(solvedWords);
-        grid.appendChild(solvedGroup);
-    });
-
-    connectionTiles
-        .filter((tile) => !solvedConnectionTitles.includes(tile.title))
-        .forEach((tile) => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "connection-tile";
-            button.textContent = tile.word;
-            button.dataset.word = tile.word;
-            button.addEventListener("click", () => toggleConnectionWord(tile.word));
-
-            if (selectedConnectionWords.includes(tile.word)) {
-                button.classList.add("selected");
-            }
-
-            grid.appendChild(button);
-        });
 }
 
 function createConnectionsControls() {
@@ -379,133 +352,266 @@ function createConnectionsControls() {
         controls = document.createElement("div");
         controls.id = "connections-controls";
         controls.style.display = "flex";
-        controls.style.justifyContent = "center";
         controls.style.gap = "10px";
+        controls.style.justifyContent = "center";
         controls.style.flexWrap = "wrap";
-        controls.style.marginBottom = "15px";
+        controls.style.margin = "0 auto 18px";
+
+        const submitButton = document.createElement("button");
+        submitButton.type = "button";
+        submitButton.id = "connections-submit";
+        submitButton.textContent = "SUBMIT";
+        submitButton.addEventListener("click", submitConnectionsGuess);
+
+        const shuffleButton = document.createElement("button");
+        shuffleButton.type = "button";
+        shuffleButton.id = "connections-shuffle";
+        shuffleButton.className = "secondary";
+        shuffleButton.textContent = "SHUFFLE";
+        shuffleButton.addEventListener("click", shuffleConnectionsTiles);
+
+        const deselectButton = document.createElement("button");
+        deselectButton.type = "button";
+        deselectButton.id = "connections-deselect";
+        deselectButton.className = "secondary";
+        deselectButton.textContent = "DESELECT";
+        deselectButton.addEventListener("click", deselectAllConnections);
+
+        controls.appendChild(submitButton);
+        controls.appendChild(shuffleButton);
+        controls.appendChild(deselectButton);
+
         grid.insertAdjacentElement("afterend", controls);
     }
+}
 
-    controls.innerHTML = "";
+function renderConnections() {
+    const grid = document.getElementById("connections-grid");
+    if (!grid) return;
 
-    const submitButton = document.createElement("button");
-    submitButton.type = "button";
-    submitButton.textContent = "SUBMIT";
-    submitButton.addEventListener("click", submitConnectionGuess);
+    grid.innerHTML = "";
 
-    const shuffleButton = document.createElement("button");
-    shuffleButton.type = "button";
-    shuffleButton.textContent = "SHUFFLE";
-    shuffleButton.addEventListener("click", shuffleConnections);
+    solvedConnectionGroups.forEach((groupIndex) => {
+        const group = CONNECTION_GROUPS[groupIndex];
+        const solvedBox = document.createElement("div");
+        solvedBox.className = `connection-solved-group group-${groupIndex + 1}`;
 
-    controls.appendChild(submitButton);
-    controls.appendChild(shuffleButton);
+        const title = document.createElement("div");
+        title.className = "solved-title";
+        title.textContent = group.title;
+
+        const words = document.createElement("div");
+        words.className = "solved-words";
+        words.textContent = group.words.join(", ");
+
+        solvedBox.appendChild(title);
+        solvedBox.appendChild(words);
+        grid.appendChild(solvedBox);
+    });
+
+    connectionTiles.forEach((word) => {
+        const tile = document.createElement("button");
+        tile.type = "button";
+        tile.className = "connection-tile";
+        tile.textContent = word;
+        tile.dataset.word = word;
+
+        if (selectedConnectionWords.includes(word)) {
+            tile.classList.add("selected");
+        }
+
+        tile.addEventListener("click", () => toggleConnectionWord(word));
+        grid.appendChild(tile);
+    });
+
+    updateConnectionsButtons();
 }
 
 function toggleConnectionWord(word) {
-    const tile = connectionTiles.find((item) => item.word === word);
-    if (!tile || solvedConnectionTitles.includes(tile.title)) return;
+    if (connectionsLocked) return;
 
     if (selectedConnectionWords.includes(word)) {
-        selectedConnectionWords = selectedConnectionWords.filter((item) => item !== word);
+        selectedConnectionWords = selectedConnectionWords.filter((selected) => selected !== word);
     } else {
         if (selectedConnectionWords.length >= 4) {
-            setMessage("connections-message", "Only four at a time.");
+            setMessage("connections-message", "You can only select four words.");
             return;
         }
 
         selectedConnectionWords.push(word);
     }
 
-    drawConnections();
+    renderConnections();
+    updateConnectionsMessage();
 }
 
-function submitConnectionGuess() {
+function submitConnectionsGuess() {
+    if (connectionsLocked) return;
+
     if (selectedConnectionWords.length !== 4) {
-        setMessage("connections-message", "Select exactly four words.");
+        setMessage("connections-message", `Select exactly four words. ${CONNECTION_MAX_TRIES - connectionTriesUsed} tries left.`);
         return;
     }
 
-    const matchedGroup = CONNECTION_GROUPS.find((group) => {
-        if (solvedConnectionTitles.includes(group.title)) return false;
+    connectionTriesUsed += 1;
 
-        return group.words.every((word) => selectedConnectionWords.includes(word));
+    const matchedGroupIndex = CONNECTION_GROUPS.findIndex((group, index) => {
+        if (solvedConnectionGroups.includes(index)) return false;
+        return selectedConnectionWords.every((word) => group.words.includes(word));
     });
 
-    if (matchedGroup) {
-        solvedConnectionTitles.push(matchedGroup.title);
+    if (matchedGroupIndex !== -1) {
+        solvedConnectionGroups.push(matchedGroupIndex);
+        connectionTiles = connectionTiles.filter(
+            (word) => !CONNECTION_GROUPS[matchedGroupIndex].words.includes(word)
+        );
         selectedConnectionWords = [];
-        drawConnections();
+        renderConnections();
 
-        if (solvedConnectionTitles.length === CONNECTION_GROUPS.length) {
-            setMessage("connections-message", "You found them all. One more puzzle.");
+        if (solvedConnectionGroups.length === CONNECTION_GROUPS.length) {
+            connectionsLocked = true;
+            updateConnectionsButtons();
+            setMessage("connections-message", "You found all four groups.");
 
             setTimeout(() => {
                 showScreen("strands");
                 initStrands();
             }, 1400);
-        } else {
-            setMessage("connections-message", matchedGroup.title);
+
+            return;
         }
+
+        updateConnectionsMessage(`Correct: ${CONNECTION_GROUPS[matchedGroupIndex].title}.`);
+        return;
+    }
+
+    flashWrongConnectionTiles();
+    selectedConnectionWords = [];
+
+    if (connectionTriesUsed >= CONNECTION_MAX_TRIES) {
+        connectionsLocked = true;
+        revealRemainingConnectionGroups();
+        renderConnections();
+        updateConnectionsButtons();
+        setMessage("connections-message", "That was the last try. Here are the groups.");
+
+        setTimeout(() => {
+            showScreen("strands");
+            initStrands();
+        }, 2200);
 
         return;
     }
 
-    markWrongConnectionGuess();
-    setMessage("connections-message", "Not quite. Try a different connection.");
-
-    setTimeout(() => {
-        selectedConnectionWords = [];
-        drawConnections();
-    }, 450);
+    renderConnections();
+    updateConnectionsMessage("Not quite. Try another connection.");
 }
 
-function markWrongConnectionGuess() {
+function flashWrongConnectionTiles() {
     selectedConnectionWords.forEach((word) => {
-        const tile = document.querySelector(`.connection-tile[data-word="${word}"]`);
+        const tile = document.querySelector(`.connection-tile[data-word="${CSS.escape(word)}"]`);
         if (tile) {
             tile.classList.add("wrong");
+            setTimeout(() => tile.classList.remove("wrong"), 450);
         }
     });
 }
 
-function shuffleConnections() {
-    const unsolvedTiles = connectionTiles.filter((tile) => !solvedConnectionTitles.includes(tile.title));
-    const solvedTiles = connectionTiles.filter((tile) => solvedConnectionTitles.includes(tile.title));
+function shuffleConnectionsTiles() {
+    if (connectionsLocked) return;
+    connectionTiles = shuffleArray(connectionTiles);
+    renderConnections();
+}
 
-    connectionTiles = [...solvedTiles, ...shuffleArray(unsolvedTiles)];
+function deselectAllConnections() {
+    if (connectionsLocked) return;
     selectedConnectionWords = [];
-    drawConnections();
-    setMessage("connections-message", "Shuffled.");
+    renderConnections();
+    updateConnectionsMessage();
+}
+
+function revealRemainingConnectionGroups() {
+    CONNECTION_GROUPS.forEach((group, index) => {
+        if (!solvedConnectionGroups.includes(index)) {
+            solvedConnectionGroups.push(index);
+        }
+    });
+
+    connectionTiles = [];
+    selectedConnectionWords = [];
+}
+
+function updateConnectionsMessage(prefix = "") {
+    const triesLeft = CONNECTION_MAX_TRIES - connectionTriesUsed;
+    const solvedCount = solvedConnectionGroups.length;
+    const selectedCount = selectedConnectionWords.length;
+
+    const base = `${triesLeft} ${triesLeft === 1 ? "try" : "tries"} left. ${solvedCount}/4 groups solved. ${selectedCount}/4 selected.`;
+    setMessage("connections-message", prefix ? `${prefix} ${base}` : base);
+}
+
+function updateConnectionsButtons() {
+    const submitButton = document.getElementById("connections-submit");
+    const shuffleButton = document.getElementById("connections-shuffle");
+    const deselectButton = document.getElementById("connections-deselect");
+
+    if (submitButton) {
+        submitButton.disabled = connectionsLocked || selectedConnectionWords.length !== 4;
+    }
+
+    if (shuffleButton) {
+        shuffleButton.disabled = connectionsLocked;
+    }
+
+    if (deselectButton) {
+        deselectButton.disabled = connectionsLocked || selectedConnectionWords.length === 0;
+    }
 }
 
 /* =========================================================
    STRANDS
+   Theme: How I see you
+   Words: HUSBAND, LIFE PARTNER, COACH, THERAPIST,
+          LIFE OF THE PARTY, PROTECTOR
    ========================================================= */
 
-const STRANDS_SIZE = 11;
-
+const STRANDS_THEME = "How I see you";
 const STRANDS_WORDS = [
-    "SORRY",
-    "TRUST",
-    "LISTEN",
-    "CHANGE",
-    "LOVE"
+    "HUSBAND",
+    "LIFE PARTNER",
+    "COACH",
+    "THERAPIST",
+    "LIFE OF THE PARTY",
+    "PROTECTOR"
 ];
 
-const STRANDS_PLACEMENTS = [
-    { word: "SORRY", row: 0, col: 0, direction: "right" },
-    { word: "TRUST", row: 2, col: 2, direction: "right" },
-    { word: "LISTEN", row: 4, col: 1, direction: "right" },
-    { word: "CHANGE", row: 6, col: 3, direction: "right" },
-    { word: "LOVE", row: 8, col: 4, direction: "right" }
+const STRANDS_ROWS = 8;
+const STRANDS_COLS = 8;
+
+const STRANDS_LAYOUT = [
+    ["H", "U", "S", "B", "A", "N", "D", "X"],
+    ["R", "E", "N", "T", "R", "A", "P", "E"],
+    ["W", "Q", "L", "I", "F", "E", "M", "T"],
+    ["P", "R", "O", "T", "E", "C", "T", "O"],
+    ["H", "C", "A", "O", "C", "H", "R", "P"],
+    ["T", "Y", "A", "P", "A", "R", "T", "Y"],
+    ["H", "E", "R", "A", "P", "I", "S", "T"],
+    ["L", "I", "F", "E", "O", "F", "T", "H"]
 ];
 
-let strandsGrid = [];
-let selectedStrandCells = [];
-let foundStrandsWords = [];
-let foundStrandsCellKeys = new Set();
+const STRANDS_PATHS = {
+    HUSBAND: [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6]],
+    LIFEPARTNER: [[2, 2], [2, 3], [2, 4], [2, 5], [1, 6], [1, 5], [1, 4], [1, 3], [1, 2], [1, 1], [1, 0]],
+    COACH: [[4, 4], [4, 3], [4, 2], [4, 1], [4, 0]],
+    THERAPIST: [[7, 6], [6, 7], [6, 6], [6, 5], [6, 4], [6, 3], [6, 2], [6, 1], [6, 0]],
+    LIFEOFTHEPARTY: [[7, 0], [7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7], [6, 7], [5, 7], [5, 6], [5, 5], [5, 4], [5, 3]],
+    PROTECTOR: [[3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7], [4, 7]]
+};
+
 let strandsInitialized = false;
+let selectedStrandCells = [];
+let foundStrandWords = [];
+let foundStrandCellKeys = new Set();
 
 function initStrands() {
     const board = document.getElementById("strands-board");
@@ -513,79 +619,46 @@ function initStrands() {
 
     if (strandsInitialized) return;
 
-    strandsGrid = createStrandsGrid();
     selectedStrandCells = [];
-    foundStrandsWords = [];
-    foundStrandsCellKeys = new Set();
+    foundStrandWords = [];
+    foundStrandCellKeys = new Set();
 
-    drawStrandsBoard();
+    createStrandsHeader();
     createStrandsControls();
-    setMessage("strands-message", `Find the hidden words: ${foundStrandsWords.length}/${STRANDS_WORDS.length}`);
+    renderStrandsBoard();
+    updateStrandsMessage();
 
     strandsInitialized = true;
 }
 
-function createStrandsGrid() {
-    const fillerLetters = "AEIOULNRSTCHPGMYDFBK";
-    const grid = Array.from({ length: STRANDS_SIZE }, (_, row) =>
-        Array.from({ length: STRANDS_SIZE }, (_, col) => {
-            const index = (row * 7 + col * 5 + row + col) % fillerLetters.length;
-            return fillerLetters[index];
-        })
-    );
-
-    STRANDS_PLACEMENTS.forEach((placement) => {
-        placement.word.split("").forEach((letter, index) => {
-            const position = getPositionFromPlacement(placement, index);
-            grid[position.row][position.col] = letter;
-        });
-    });
-
-    return grid;
-}
-
-function getPositionFromPlacement(placement, index) {
-    if (placement.direction === "down") {
-        return {
-            row: placement.row + index,
-            col: placement.col
-        };
-    }
-
-    return {
-        row: placement.row,
-        col: placement.col + index
-    };
-}
-
-function drawStrandsBoard() {
+function createStrandsHeader() {
+    const strandsScreen = document.getElementById("strands");
     const board = document.getElementById("strands-board");
-    if (!board) return;
+    if (!strandsScreen || !board) return;
 
-    board.innerHTML = "";
+    let themeBox = document.getElementById("strands-theme-box");
 
-    for (let row = 0; row < STRANDS_SIZE; row += 1) {
-        for (let col = 0; col < STRANDS_SIZE; col += 1) {
-            const key = getStrandCellKey(row, col);
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "strand-letter";
-            button.textContent = strandsGrid[row][col];
-            button.dataset.row = String(row);
-            button.dataset.col = String(col);
-
-            if (foundStrandsCellKeys.has(key)) {
-                button.classList.add("found");
-            }
-
-            if (selectedStrandCells.some((cell) => cell.row === row && cell.col === col)) {
-                button.classList.add("selected");
-            }
-
-            button.addEventListener("click", () => toggleStrandCell(row, col));
-            board.appendChild(button);
-        }
+    if (!themeBox) {
+        themeBox = document.createElement("div");
+        themeBox.id = "strands-theme-box";
+        themeBox.style.margin = "0 auto 16px";
+        themeBox.style.maxWidth = "520px";
+        themeBox.style.fontFamily = "Arial, sans-serif";
+        themeBox.style.lineHeight = "1.5";
+        board.insertAdjacentElement("beforebegin", themeBox);
     }
+
+    themeBox.innerHTML = `
+        <div style="font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #7d1f2c; font-weight: 700; margin-bottom: 6px;">
+            Theme
+        </div>
+        <div style="font-size: 22px; font-weight: 800; margin-bottom: 6px;">
+            ${STRANDS_THEME}
+        </div>
+        <div id="strands-counter" style="font-size: 14px; color: #5d5550;">
+            Find 6 words. 0/6 found.
+        </div>
+    `;
 }
 
 function createStrandsControls() {
@@ -598,121 +671,221 @@ function createStrandsControls() {
         controls = document.createElement("div");
         controls.id = "strands-controls";
         controls.style.display = "flex";
-        controls.style.justifyContent = "center";
         controls.style.gap = "10px";
+        controls.style.justifyContent = "center";
         controls.style.flexWrap = "wrap";
-        controls.style.marginBottom = "15px";
+        controls.style.margin = "0 auto 18px";
+
+        const submitButton = document.createElement("button");
+        submitButton.type = "button";
+        submitButton.id = "strands-submit";
+        submitButton.textContent = "SUBMIT";
+        submitButton.addEventListener("click", submitStrandsSelection);
+
+        const clearButton = document.createElement("button");
+        clearButton.type = "button";
+        clearButton.id = "strands-clear";
+        clearButton.className = "secondary";
+        clearButton.textContent = "CLEAR";
+        clearButton.addEventListener("click", clearStrandsSelection);
+
+        controls.appendChild(submitButton);
+        controls.appendChild(clearButton);
         board.insertAdjacentElement("afterend", controls);
     }
+}
 
-    controls.innerHTML = "";
+function renderStrandsBoard() {
+    const board = document.getElementById("strands-board");
+    if (!board) return;
 
-    const submitButton = document.createElement("button");
-    submitButton.type = "button";
-    submitButton.textContent = "SUBMIT";
-    submitButton.addEventListener("click", submitStrandsGuess);
+    board.innerHTML = "";
+    board.style.gridTemplateColumns = `repeat(${STRANDS_COLS}, 1fr)`;
 
-    const clearButton = document.createElement("button");
-    clearButton.type = "button";
-    clearButton.textContent = "CLEAR";
-    clearButton.addEventListener("click", clearStrandsSelection);
+    for (let row = 0; row < STRANDS_ROWS; row += 1) {
+        for (let col = 0; col < STRANDS_COLS; col += 1) {
+            const cell = document.createElement("button");
+            cell.type = "button";
+            cell.className = "strand-letter";
+            cell.textContent = STRANDS_LAYOUT[row][col];
+            cell.dataset.row = String(row);
+            cell.dataset.col = String(col);
+            cell.dataset.key = getStrandCellKey(row, col);
+            cell.setAttribute("aria-label", `Letter ${STRANDS_LAYOUT[row][col]} at row ${row + 1}, column ${col + 1}`);
 
-    controls.appendChild(submitButton);
-    controls.appendChild(clearButton);
+            if (foundStrandCellKeys.has(cell.dataset.key)) {
+                cell.classList.add("found");
+            }
+
+            if (selectedStrandCells.some((selected) => selected.row === row && selected.col === col)) {
+                cell.classList.add("selected");
+            }
+
+            cell.addEventListener("click", () => toggleStrandCell(row, col));
+            board.appendChild(cell);
+        }
+    }
+
+    updateStrandsButtons();
+    updateStrandsCounter();
 }
 
 function toggleStrandCell(row, col) {
     const key = getStrandCellKey(row, col);
 
-    if (foundStrandsCellKeys.has(key)) return;
-
-    const selectedIndex = selectedStrandCells.findIndex(
-        (cell) => cell.row === row && cell.col === col
-    );
-
-    if (selectedIndex !== -1) {
-        selectedStrandCells.splice(selectedIndex, 1);
-    } else {
-        selectedStrandCells.push({ row, col });
-    }
-
-    drawStrandsBoard();
-    updateCurrentStrandsMessage();
-}
-
-function updateCurrentStrandsMessage() {
-    const currentWord = getSelectedStrandsWord();
-
-    if (currentWord) {
-        setMessage(
-            "strands-message",
-            `${currentWord} — found ${foundStrandsWords.length}/${STRANDS_WORDS.length}`
-        );
-    } else {
-        setMessage(
-            "strands-message",
-            `Find the hidden words: ${foundStrandsWords.length}/${STRANDS_WORDS.length}`
-        );
-    }
-}
-
-function submitStrandsGuess() {
-    const selectedWord = getSelectedStrandsWord();
-    const reversedWord = selectedWord.split("").reverse().join("");
-
-    const matchedWord = STRANDS_WORDS.find((word) =>
-        !foundStrandsWords.includes(word) &&
-        (word === selectedWord || word === reversedWord)
-    );
-
-    if (!matchedWord) {
-        setMessage("strands-message", selectedWord ? "Not one of the hidden words. Try again." : "Select letters first.");
+    if (foundStrandCellKeys.has(key)) {
+        setMessage("strands-message", "That letter is already part of a found word.");
         return;
     }
 
-    foundStrandsWords.push(matchedWord);
+    const existingIndex = selectedStrandCells.findIndex(
+        (cell) => cell.row === row && cell.col === col
+    );
+
+    if (existingIndex !== -1) {
+        selectedStrandCells = selectedStrandCells.slice(0, existingIndex);
+        renderStrandsBoard();
+        updateStrandsMessage();
+        return;
+    }
+
+    if (selectedStrandCells.length > 0) {
+        const previousCell = selectedStrandCells[selectedStrandCells.length - 1];
+
+        if (!areAdjacentStrandCells(previousCell, { row, col })) {
+            setMessage("strands-message", "Choose touching letters, just like Strands.");
+            return;
+        }
+    }
+
+    selectedStrandCells.push({ row, col });
+    renderStrandsBoard();
+    updateStrandsMessage();
+}
+
+function submitStrandsSelection() {
+    if (selectedStrandCells.length === 0) {
+        setMessage("strands-message", "Select letters to make a word.");
+        return;
+    }
+
+    const selectedWord = selectedStrandCells
+        .map((cell) => STRANDS_LAYOUT[cell.row][cell.col])
+        .join("");
+
+    const reversedWord = selectedWord.split("").reverse().join("");
+    const normalizedTargets = STRANDS_WORDS.map(normalizeWord);
+
+    let foundNormalizedWord = "";
+
+    if (normalizedTargets.includes(selectedWord)) {
+        foundNormalizedWord = selectedWord;
+    } else if (normalizedTargets.includes(reversedWord)) {
+        foundNormalizedWord = reversedWord;
+    }
+
+    if (!foundNormalizedWord) {
+        setMessage("strands-message", `"${selectedWord}" is not one of the hidden words.`);
+        clearStrandsSelection(false);
+        return;
+    }
+
+    if (foundStrandWords.includes(foundNormalizedWord)) {
+        setMessage("strands-message", "You already found that word.");
+        clearStrandsSelection(false);
+        return;
+    }
+
+    foundStrandWords.push(foundNormalizedWord);
 
     selectedStrandCells.forEach((cell) => {
-        foundStrandsCellKeys.add(getStrandCellKey(cell.row, cell.col));
+        foundStrandCellKeys.add(getStrandCellKey(cell.row, cell.col));
     });
 
+    const displayWord = STRANDS_WORDS.find((word) => normalizeWord(word) === foundNormalizedWord) || foundNormalizedWord;
     selectedStrandCells = [];
-    drawStrandsBoard();
+    renderStrandsBoard();
 
-    if (foundStrandsWords.length === STRANDS_WORDS.length) {
-        setMessage("strands-message", "You found every word.");
+    if (foundStrandWords.length === STRANDS_WORDS.length) {
+        setMessage("strands-message", "You found all 6 words. That is exactly how I see you.");
 
         setTimeout(() => {
             showScreen("final");
-        }, 1400);
-    } else {
-        setMessage(
-            "strands-message",
-            `Found ${matchedWord}. Keep going: ${foundStrandsWords.length}/${STRANDS_WORDS.length}`
-        );
+        }, 1600);
+
+        return;
+    }
+
+    setMessage("strands-message", `Found: ${displayWord}. ${STRANDS_WORDS.length - foundStrandWords.length} left.`);
+}
+
+function clearStrandsSelection(showDefaultMessage = true) {
+    selectedStrandCells = [];
+    renderStrandsBoard();
+
+    if (showDefaultMessage) {
+        updateStrandsMessage();
     }
 }
 
-function clearStrandsSelection() {
-    selectedStrandCells = [];
-    drawStrandsBoard();
-    setMessage("strands-message", `Find the hidden words: ${foundStrandsWords.length}/${STRANDS_WORDS.length}`);
-}
-
-function getSelectedStrandsWord() {
-    return selectedStrandCells
-        .map((cell) => strandsGrid[cell.row][cell.col])
-        .join("");
+function areAdjacentStrandCells(a, b) {
+    const rowDistance = Math.abs(a.row - b.row);
+    const colDistance = Math.abs(a.col - b.col);
+    return rowDistance <= 1 && colDistance <= 1 && rowDistance + colDistance > 0;
 }
 
 function getStrandCellKey(row, col) {
     return `${row}-${col}`;
 }
 
+function updateStrandsMessage() {
+    const selectedWord = selectedStrandCells
+        .map((cell) => STRANDS_LAYOUT[cell.row][cell.col])
+        .join("");
+
+    const foundDisplayWords = foundStrandWords.map((normalizedWord) => {
+        return STRANDS_WORDS.find((word) => normalizeWord(word) === normalizedWord) || normalizedWord;
+    });
+
+    if (selectedWord) {
+        setMessage("strands-message", `Selected: ${selectedWord}`);
+        return;
+    }
+
+    if (foundDisplayWords.length > 0) {
+        setMessage("strands-message", `Found ${foundDisplayWords.length}/6: ${foundDisplayWords.join(", ")}`);
+        return;
+    }
+
+    setMessage("strands-message", "Find 6 hidden words. Theme: How I see you.");
+}
+
+function updateStrandsCounter() {
+    const counter = document.getElementById("strands-counter");
+    if (counter) {
+        counter.textContent = `Find 6 words. ${foundStrandWords.length}/6 found.`;
+    }
+}
+
+function updateStrandsButtons() {
+    const submitButton = document.getElementById("strands-submit");
+    const clearButton = document.getElementById("strands-clear");
+
+    if (submitButton) {
+        submitButton.disabled = selectedStrandCells.length === 0;
+    }
+
+    if (clearButton) {
+        clearButton.disabled = selectedStrandCells.length === 0;
+    }
+}
+
 /* =========================================================
-   OPTIONAL SAFETY CHECK
+   GLOBAL FALLBACKS
+   These expose functions for inline onclick attributes.
    ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
-    showScreen("intro");
-});
+window.startGame = startGame;
+window.submitWordleGuess = submitWordleGuess;
+window.submitConnectionsGuess = submitConnectionsGuess;
+window.submitStrandsSelection = submitStrandsSelection;
