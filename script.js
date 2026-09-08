@@ -1,11 +1,11 @@
 /* =========================================================
-   FOR YOU ❤️
+   APOLOGY GAMES
    WORDLE → CONNECTIONS → STRANDS
    ========================================================= */
 
 
 /* =========================================================
-   GENERAL NAVIGATION
+   START
    ========================================================= */
 
 function startGame() {
@@ -18,72 +18,76 @@ function startGame() {
 
 /* =========================================================
    WORDLE
-   ANSWER: SORRY
    ========================================================= */
 
 const wordleAnswer = "SORRY";
+
 let wordleRow = 0;
 let wordleGuess = "";
+
 const maxWordleRows = 6;
 
-const wordleKeyboardStatus = {};
 
-
-/* -------------------------
-   CREATE WORDLE
-   ------------------------- */
+/* ---------- CREATE WORDLE ---------- */
 
 function createWordle() {
 
-    const board = document.getElementById("wordle-board");
+    const board =
+        document.getElementById("wordle-board");
 
     board.innerHTML = "";
 
     wordleRow = 0;
     wordleGuess = "";
 
-    // Create 6 x 5 board
+
     for (let row = 0; row < maxWordleRows; row++) {
 
         for (let col = 0; col < 5; col++) {
 
-            const tile = document.createElement("div");
+            const tile =
+                document.createElement("div");
 
             tile.classList.add("wordle-tile");
 
-            tile.id = `wordle-${row}-${col}`;
+            tile.id =
+                `wordle-${row}-${col}`;
 
             board.appendChild(tile);
         }
     }
 
+
     createWordleKeyboard();
 
-    document.getElementById("wordle-message").innerHTML =
+
+    document.getElementById(
+        "wordle-message"
+    ).innerHTML =
         "Six tries. Five letters. You probably know this one.";
 }
 
 
-/* -------------------------
-   WORDLE KEYBOARD
-   ------------------------- */
+/* ---------- KEYBOARD ---------- */
 
 function createWordleKeyboard() {
 
-    const oldKeyboard = document.getElementById("wordle-keyboard");
+    const oldKeyboard =
+        document.getElementById(
+            "wordle-keyboard"
+        );
 
     if (oldKeyboard) {
         oldKeyboard.remove();
     }
 
-    // Reset keyboard colours
-    Object.keys(wordleKeyboardStatus).forEach(key => {
-        delete wordleKeyboardStatus[key];
-    });
 
-    const keyboard = document.createElement("div");
+    const keyboard =
+        document.createElement("div");
 
-    keyboard.id = "wordle-keyboard";
+    keyboard.id =
+        "wordle-keyboard";
+
 
     const rows = [
         "QWERTYUIOP",
@@ -91,59 +95,90 @@ function createWordleKeyboard() {
         "ZXCVBNM"
     ];
 
+
     rows.forEach(rowLetters => {
 
-        const row = document.createElement("div");
+        const row =
+            document.createElement("div");
 
-        row.classList.add("keyboard-row");
+        row.classList.add(
+            "keyboard-row"
+        );
+
 
         rowLetters.split("").forEach(letter => {
 
-            const key = document.createElement("button");
+            const key =
+                document.createElement("button");
 
             key.innerText = letter;
 
-            key.classList.add("wordle-key");
+            key.classList.add(
+                "wordle-key"
+            );
 
             key.dataset.key = letter;
 
-            key.onclick = () => addWordleLetter(letter);
+            key.onclick = () =>
+                addWordleLetter(letter);
 
             row.appendChild(key);
         });
 
+
         keyboard.appendChild(row);
     });
 
-    // Bottom row
-    const controls = document.createElement("div");
 
-    controls.classList.add("keyboard-row");
+    const controls =
+        document.createElement("div");
 
-    const enter = document.createElement("button");
+    controls.classList.add(
+        "keyboard-row"
+    );
+
+
+    const enter =
+        document.createElement("button");
 
     enter.innerText = "ENTER";
-    enter.classList.add("wordle-key", "wide-key");
-    enter.onclick = submitWordleGuess;
 
-    const backspace = document.createElement("button");
+    enter.classList.add(
+        "wordle-key",
+        "wide-key"
+    );
+
+    enter.onclick =
+        submitWordleGuess;
+
+
+    const backspace =
+        document.createElement("button");
 
     backspace.innerText = "⌫";
-    backspace.classList.add("wordle-key", "wide-key");
-    backspace.onclick = deleteWordleLetter;
+
+    backspace.classList.add(
+        "wordle-key",
+        "wide-key"
+    );
+
+    backspace.onclick =
+        deleteWordleLetter;
+
 
     controls.appendChild(enter);
     controls.appendChild(backspace);
 
     keyboard.appendChild(controls);
 
-    document.getElementById("wordle-board").after(keyboard);
+
+    document
+        .getElementById("wordle-board")
+        .after(keyboard);
 }
 
 
-/* -------------------------
-   WORDLE INPUT
-   ------------------------- */
+/* ---------- TYPE ---------- */
 
 function addWordleLetter(letter) {
 
@@ -159,7 +194,8 @@ function addWordleLetter(letter) {
 
 function deleteWordleLetter() {
 
-    wordleGuess = wordleGuess.slice(0, -1);
+    wordleGuess =
+        wordleGuess.slice(0, -1);
 
     updateWordleTiles();
 }
@@ -169,209 +205,253 @@ function updateWordleTiles() {
 
     for (let col = 0; col < 5; col++) {
 
-        const tile = document.getElementById(
-            `wordle-${wordleRow}-${col}`
-        );
+        const tile =
+            document.getElementById(
+                `wordle-${wordleRow}-${col}`
+            );
 
-        tile.innerText = wordleGuess[col] || "";
+        tile.innerText =
+            wordleGuess[col] || "";
     }
 }
 
 
-/* -------------------------
-   COMPUTER KEYBOARD
-   ------------------------- */
+/* ---------- KEYBOARD INPUT ---------- */
 
-document.addEventListener("keydown", function(event) {
+document.addEventListener(
+    "keydown",
+    function(event) {
 
-    const wordleScreen = document.getElementById("wordle");
+        const wordleScreen =
+            document.getElementById("wordle");
 
-    if (
-        wordleScreen &&
-        !wordleScreen.classList.contains("hidden")
-    ) {
+        if (
+            wordleScreen &&
+            !wordleScreen.classList.contains("hidden")
+        ) {
 
-        const key = event.key.toUpperCase();
+            const key =
+                event.key.toUpperCase();
 
-        if (/^[A-Z]$/.test(key)) {
-            addWordleLetter(key);
-        }
 
-        if (event.key === "Backspace") {
-            deleteWordleLetter();
-        }
+            if (/^[A-Z]$/.test(key)) {
+                addWordleLetter(key);
+            }
 
-        if (event.key === "Enter") {
-            submitWordleGuess();
+
+            if (event.key === "Backspace") {
+                deleteWordleLetter();
+            }
+
+
+            if (event.key === "Enter") {
+                submitWordleGuess();
+            }
         }
     }
-});
+);
 
 
-/* -------------------------
-   CHECK WORDLE
-   ------------------------- */
+/* ---------- SUBMIT ---------- */
 
 function submitWordleGuess() {
 
     if (wordleGuess.length !== 5) {
 
-        document.getElementById("wordle-message").innerText =
+        document.getElementById(
+            "wordle-message"
+        ).innerText =
             "Five letters. That's all I'm asking.";
 
         return;
     }
 
-    const guess = wordleGuess;
 
-    const answerLetters = wordleAnswer.split("");
+    const guess =
+        wordleGuess;
 
-    const letterResults = Array(5).fill("absent");
 
-    // First pass: exact matches
+    const answerLetters =
+        wordleAnswer.split("");
+
+
+    const results =
+        Array(5).fill("absent");
+
+
+    /* CORRECT LETTERS */
+
     for (let i = 0; i < 5; i++) {
 
-        if (guess[i] === wordleAnswer[i]) {
+        if (
+            guess[i] ===
+            wordleAnswer[i]
+        ) {
 
-            letterResults[i] = "correct";
+            results[i] =
+                "correct";
 
-            answerLetters[i] = null;
+            answerLetters[i] =
+                null;
         }
     }
 
-    // Second pass: letters that exist elsewhere
+
+    /* PRESENT LETTERS */
+
     for (let i = 0; i < 5; i++) {
 
-        if (letterResults[i] === "correct") {
+        if (
+            results[i] ===
+            "correct"
+        ) {
             continue;
         }
 
-        const letterIndex = answerLetters.indexOf(guess[i]);
 
-        if (letterIndex !== -1) {
+        const index =
+            answerLetters.indexOf(
+                guess[i]
+            );
 
-            letterResults[i] = "present";
 
-            answerLetters[letterIndex] = null;
+        if (index !== -1) {
+
+            results[i] =
+                "present";
+
+            answerLetters[index] =
+                null;
         }
     }
 
-    // Apply colours with slight delay
+
+    /* TILE ANIMATION */
+
     for (let i = 0; i < 5; i++) {
 
-        const tile = document.getElementById(
-            `wordle-${wordleRow}-${i}`
-        );
+        const tile =
+            document.getElementById(
+                `wordle-${wordleRow}-${i}`
+            );
+
 
         setTimeout(() => {
 
-            tile.classList.add(letterResults[i]);
+            tile.classList.add(
+                results[i]
+            );
 
         }, i * 120);
-
-        updateKeyboard(
-            guess[i],
-            letterResults[i]
-        );
     }
 
-    // Correct
+
+    /* GREY OUT ONLY INCORRECT KEYBOARD LETTERS */
+
+    for (let i = 0; i < 5; i++) {
+
+        const letter =
+            guess[i];
+
+
+        if (
+            !wordleAnswer.includes(letter)
+        ) {
+
+            setTimeout(() => {
+
+                const key =
+                    document.querySelector(
+                        `.wordle-key[data-key="${letter}"]`
+                    );
+
+
+                if (key) {
+                    key.classList.add(
+                        "key-absent"
+                    );
+                }
+
+            }, i * 120);
+        }
+    }
+
+
+    /* CORRECT */
+
     if (guess === wordleAnswer) {
 
         setTimeout(() => {
 
-            document.getElementById("wordle-message").innerHTML = `
+            document.getElementById(
+                "wordle-message"
+            ).innerHTML = `
                 <strong>SORRY.</strong><br><br>
+
                 Correct.<br><br>
+
                 And unfortunately, this is one of those
                 words that means considerably more than
                 five letters.
             `;
 
-            setTimeout(showConnections, 3000);
+
+            setTimeout(
+                showConnections,
+                3000
+            );
 
         }, 900);
 
+
         return;
     }
+
+
+    /* NEXT ROW */
 
     wordleRow++;
 
-    if (wordleRow >= maxWordleRows) {
+
+    if (
+        wordleRow >=
+        maxWordleRows
+    ) {
 
         setTimeout(() => {
 
-            document.getElementById("wordle-message").innerHTML = `
+            document.getElementById(
+                "wordle-message"
+            ).innerHTML = `
                 The answer was <strong>SORRY</strong>.<br><br>
+
                 You shouldn't have had to guess what I meant.
             `;
 
-            setTimeout(showConnections, 3500);
+
+            setTimeout(
+                showConnections,
+                3500
+            );
 
         }, 900);
 
+
         return;
     }
+
 
     wordleGuess = "";
 
+
     setTimeout(() => {
 
-        document.getElementById("wordle-message").innerText =
+        document.getElementById(
+            "wordle-message"
+        ).innerText =
             "Not quite. Try again.";
 
     }, 700);
-}
-
-
-/* -------------------------
-   UPDATE KEYBOARD
-   ------------------------- */
-
-function updateKeyboard(letter, status) {
-
-    const currentStatus = wordleKeyboardStatus[letter];
-
-    // Green always wins
-    if (currentStatus === "correct") {
-        return;
-    }
-
-    // Yellow wins over grey
-    if (
-        currentStatus === "present" &&
-        status === "absent"
-    ) {
-        return;
-    }
-
-    wordleKeyboardStatus[letter] = status;
-
-    const key = document.querySelector(
-        `.wordle-key[data-key="${letter}"]`
-    );
-
-    if (!key) {
-        return;
-    }
-
-    key.classList.remove(
-        "key-correct",
-        "key-present",
-        "key-absent"
-    );
-
-    if (status === "correct") {
-        key.classList.add("key-correct");
-    }
-
-    if (status === "present") {
-        key.classList.add("key-present");
-    }
-
-    if (status === "absent") {
-        key.classList.add("key-absent");
-    }
 }
 
 
@@ -382,7 +462,8 @@ function updateKeyboard(letter, status) {
 const connectionGroups = [
 
     {
-        title: "Things I should have protected",
+        title:
+            "Things I should have protected",
 
         words: [
             "PROMISE",
@@ -392,14 +473,19 @@ const connectionGroups = [
         ],
 
         message: `
-            <strong>You told me these things mattered to you.</strong><br><br>
-            I heard you.<br><br>
-            But I did fail consistently translating hearing you into behaviour.
+            <strong>You told me these things mattered to you.</strong>
+            <br><br>
+            I heard you.
+            <br><br>
+            But I did fail consistently translating
+            hearing you into behaviour.
         `
     },
 
+
     {
-        title: "Things I should have done more often",
+        title:
+            "Things I should have done more often",
 
         words: [
             "TEXT",
@@ -409,13 +495,16 @@ const connectionGroups = [
         ],
 
         message: `
-            <strong>Communication isn't a grand romantic gesture.</strong><br><br>
+            <strong>Communication isn't a grand romantic gesture.</strong>
+            <br><br>
             It's the little things and living a shared life.
         `
     },
 
+
     {
-        title: "Things I have learned from you",
+        title:
+            "Things I have learned from you",
 
         words: [
             "LOVE",
@@ -425,16 +514,20 @@ const connectionGroups = [
         ],
 
         message: `
-            <strong>CORRECT.</strong><br><br>
+            <strong>CORRECT.</strong>
+            <br><br>
             You are significantly more complicated than
-            “boy who likes video games.”<br><br>
-            I've spent more than four years learning from you
-            and growing with you.
+            “boy who likes video games.”
+            <br><br>
+            I've spent more than four years learning from
+            you and growing with you.
         `
     },
 
+
     {
-        title: "Things I never want to take for granted",
+        title:
+            "Things I never want to take for granted",
 
         words: [
             "MOVIES",
@@ -444,45 +537,60 @@ const connectionGroups = [
         ],
 
         message: `
-            <strong>The life we've built isn't something I want
-            to treat casually.</strong>
+            <strong>The life we've built isn't something
+            I want to treat casually.</strong>
         `
     }
 
 ];
 
+
 let connectionWords = [];
+
 let selectedConnectionWords = [];
+
 let solvedConnectionGroups = [];
 
+let connectionAttempts = 0;
 
-/* -------------------------
-   SHOW CONNECTIONS
-   ------------------------- */
+const maxConnectionAttempts = 6;
+
+let connectionChecking = false;
+
+
+/* ---------- SHOW CONNECTIONS ---------- */
 
 function showConnections() {
 
-    document.getElementById("wordle").classList.add("hidden");
+    document
+        .getElementById("wordle")
+        .classList.add("hidden");
 
-    document.getElementById("connections").classList.remove("hidden");
+
+    document
+        .getElementById("connections")
+        .classList.remove("hidden");
+
 
     createConnections();
 }
 
 
-/* -------------------------
-   CREATE CONNECTIONS
-   ------------------------- */
+/* ---------- CREATE CONNECTIONS ---------- */
 
 function createConnections() {
 
-    const grid = document.getElementById("connections-grid");
+    connectionAttempts = 0;
 
-    grid.innerHTML = "";
+    selectedConnectionWords = [];
+
+    solvedConnectionGroups = [];
+
+    connectionChecking = false;
+
 
     connectionWords = [];
-    selectedConnectionWords = [];
-    solvedConnectionGroups = [];
+
 
     connectionGroups.forEach(group => {
 
@@ -497,176 +605,454 @@ function createConnections() {
 
     });
 
-    // Shuffle
-    connectionWords.sort(() => Math.random() - 0.5);
 
-    connectionWords.forEach(item => {
+    shuffleArray(connectionWords);
 
-        const tile = document.createElement("button");
 
-        tile.classList.add("connection-tile");
+    renderConnections();
 
-        tile.innerText = item.word;
 
-        tile.dataset.word = item.word;
-
-        tile.onclick = () => selectConnectionTile(tile);
-
-        grid.appendChild(tile);
-    });
-
-    document.getElementById("connections-message").innerHTML =
-        "Find four groups of four.";
+    updateConnectionsMessage(
+        "Find four groups of four.",
+        true
+    );
 }
 
 
-/* -------------------------
-   SELECT TILE
-   ------------------------- */
+/* ---------- SHUFFLE ---------- */
+
+function shuffleArray(array) {
+
+    for (
+        let i = array.length - 1;
+        i > 0;
+        i--
+    ) {
+
+        const j =
+            Math.floor(
+                Math.random() * (i + 1)
+            );
+
+
+        [
+            array[i],
+            array[j]
+        ] =
+        [
+            array[j],
+            array[i]
+        ];
+    }
+}
+
+
+/* =========================================================
+   IMPORTANT:
+   RENDER THE CONNECTIONS BOARD FROM SCRATCH
+   EVERY TIME A GROUP IS SOLVED.
+   ========================================================= */
+
+function renderConnections() {
+
+    const grid =
+        document.getElementById(
+            "connections-grid"
+        );
+
+
+    grid.innerHTML = "";
+
+
+    /* ---------- SOLVED GROUPS ---------- */
+
+    solvedConnectionGroups.forEach(
+        (groupTitle, index) => {
+
+            const group =
+                connectionGroups.find(
+                    g =>
+                        g.title ===
+                        groupTitle
+                );
+
+
+            if (!group) return;
+
+
+            const solvedBox =
+                document.createElement(
+                    "div"
+                );
+
+
+            solvedBox.classList.add(
+                "connection-solved-group"
+            );
+
+
+            solvedBox.classList.add(
+                `group-${index + 1}`
+            );
+
+
+            const title =
+                document.createElement(
+                    "div"
+                );
+
+            title.classList.add(
+                "solved-title"
+            );
+
+            title.innerText =
+                group.title;
+
+
+            const words =
+                document.createElement(
+                    "div"
+                );
+
+            words.classList.add(
+                "solved-words"
+            );
+
+            words.innerText =
+                group.words.join(" • ");
+
+
+            solvedBox.appendChild(title);
+
+            solvedBox.appendChild(words);
+
+
+            grid.appendChild(
+                solvedBox
+            );
+        }
+    );
+
+
+    /* ---------- REMAINING WORDS ---------- */
+
+    const remainingWords =
+        connectionWords.filter(
+            item =>
+                !solvedConnectionGroups.includes(
+                    item.group
+                )
+        );
+
+
+    shuffleArray(
+        remainingWords
+    );
+
+
+    remainingWords.forEach(item => {
+
+        const tile =
+            document.createElement(
+                "button"
+            );
+
+
+        tile.classList.add(
+            "connection-tile"
+        );
+
+
+        tile.innerText =
+            item.word;
+
+
+        tile.dataset.word =
+            item.word;
+
+
+        tile.type =
+            "button";
+
+
+        tile.onclick = () =>
+            selectConnectionTile(tile);
+
+
+        grid.appendChild(tile);
+
+    });
+}
+
+
+/* ---------- SELECT TILE ---------- */
 
 function selectConnectionTile(tile) {
 
-    if (tile.disabled) {
+    if (
+        connectionChecking ||
+        tile.disabled
+    ) {
         return;
     }
 
-    const word = tile.dataset.word;
 
-    if (tile.classList.contains("selected")) {
+    const word =
+        tile.dataset.word;
 
-        tile.classList.remove("selected");
+
+    /* DESELECT */
+
+    if (
+        tile.classList.contains(
+            "selected"
+        )
+    ) {
+
+        tile.classList.remove(
+            "selected"
+        );
+
 
         selectedConnectionWords =
-            selectedConnectionWords.filter(w => w !== word);
+            selectedConnectionWords.filter(
+                w => w !== word
+            );
 
-    } else {
 
-        if (selectedConnectionWords.length >= 4) {
-            return;
-        }
+        updateConnectionsMessage();
 
-        tile.classList.add("selected");
-
-        selectedConnectionWords.push(word);
+        return;
     }
 
-    // Four selected → automatically check
-    if (selectedConnectionWords.length === 4) {
 
-        setTimeout(checkConnectionGroup, 350);
+    /* MAX 4 */
+
+    if (
+        selectedConnectionWords.length >= 4
+    ) {
+        return;
+    }
+
+
+    tile.classList.add(
+        "selected"
+    );
+
+
+    selectedConnectionWords.push(
+        word
+    );
+
+
+    updateConnectionsMessage();
+
+
+    /* AUTOMATICALLY CHECK AFTER 4 */
+
+    if (
+        selectedConnectionWords.length === 4
+    ) {
+
+        connectionChecking = true;
+
+
+        setTimeout(
+            checkConnectionGroup,
+            350
+        );
     }
 }
 
 
-/* -------------------------
-   CHECK GROUP
-   ------------------------- */
+/* ---------- CHECK GROUP ---------- */
 
 function checkConnectionGroup() {
 
-    const selectedGroup = connectionGroups.find(group => {
+    const selectedGroup =
+        connectionGroups.find(
+            group => {
 
-        return group.words.every(word =>
-            selectedConnectionWords.includes(word)
+                return group.words.every(
+                    word =>
+                        selectedConnectionWords.includes(
+                            word
+                        )
+                );
+
+            }
+        );
+
+
+    /* =====================================================
+       CORRECT
+       ===================================================== */
+
+    if (selectedGroup) {
+
+        revealConnectionGroup(
+            selectedGroup
+        );
+
+        return;
+    }
+
+
+    /* =====================================================
+       WRONG
+       ===================================================== */
+
+    connectionAttempts++;
+
+
+    const selectedTiles =
+        document.querySelectorAll(
+            ".connection-tile.selected"
+        );
+
+
+    selectedTiles.forEach(tile => {
+
+        tile.classList.add(
+            "wrong"
         );
 
     });
 
-    if (selectedGroup) {
 
-        revealConnectionGroup(selectedGroup);
-
-    } else {
-
-        document.getElementById("connections-message").innerHTML =
-            "Not quite. Try another combination.";
-
-        const selectedTiles =
-            document.querySelectorAll(
-                ".connection-tile.selected"
-            );
-
-        selectedTiles.forEach(tile => {
-
-            tile.classList.add("wrong");
-
-            setTimeout(() => {
-                tile.classList.remove("selected", "wrong");
-            }, 500);
-        });
-
-        selectedConnectionWords = [];
-    }
-}
+    const remaining =
+        maxConnectionAttempts -
+        connectionAttempts;
 
 
-/* -------------------------
-   REVEAL SOLVED GROUP
-   ------------------------- */
-
-function revealConnectionGroup(group) {
-
-    solvedConnectionGroups.push(group.title);
-
-    const grid = document.getElementById("connections-grid");
-
-    const tiles = Array.from(
-        document.querySelectorAll(".connection-tile")
-    );
-
-    // Remove the four solved tiles
-    tiles.forEach(tile => {
-
-        if (group.words.includes(tile.dataset.word)) {
-
-            tile.remove();
-        }
-    });
-
-    // Create NYT-style solved box
-    const solvedBox = document.createElement("div");
-
-    solvedBox.classList.add(
-        "connection-solved-group",
-        `group-${solvedConnectionGroups.length}`
-    );
-
-    const title = document.createElement("div");
-
-    title.classList.add("solved-title");
-
-    title.innerText = group.title;
-
-    const words = document.createElement("div");
-
-    words.classList.add("solved-words");
-
-    words.innerText = group.words.join(" • ");
-
-    solvedBox.appendChild(title);
-    solvedBox.appendChild(words);
-
-    // Insert at the beginning
-    grid.prepend(solvedBox);
-
-    document.getElementById("connections-message").innerHTML =
-        group.message;
-
-    // All groups solved
-    if (solvedConnectionGroups.length === 4) {
+    if (
+        remaining > 0
+    ) {
 
         setTimeout(() => {
 
-            document.getElementById("connections-message").innerHTML += `
+            selectedTiles.forEach(
+                tile => {
+
+                    tile.classList.remove(
+                        "selected",
+                        "wrong"
+                    );
+
+                }
+            );
+
+
+            selectedConnectionWords = [];
+
+            connectionChecking = false;
+
+
+            updateConnectionsMessage(
+                `Not quite.<br><br>
+                 <strong>${remaining}
+                 ${remaining === 1 ? "try" : "tries"}
+                 remaining.</strong>`,
+                false
+            );
+
+        }, 700);
+
+
+        return;
+    }
+
+
+    /* =====================================================
+       SIX FAILED ATTEMPTS
+       ===================================================== */
+
+    setTimeout(() => {
+
+        selectedConnectionWords = [];
+
+        connectionChecking = false;
+
+        revealRemainingConnections();
+
+    }, 700);
+}
+
+
+/* =========================================================
+   REVEAL CORRECT GROUP
+   ========================================================= */
+
+function revealConnectionGroup(
+    group
+) {
+
+    if (
+        solvedConnectionGroups.includes(
+            group.title
+        )
+    ) {
+        return;
+    }
+
+
+    solvedConnectionGroups.push(
+        group.title
+    );
+
+
+    /* IMPORTANT:
+       Clear selection BEFORE rebuilding board.
+    */
+
+    selectedConnectionWords = [];
+
+    connectionChecking = false;
+
+
+    /* REBUILD THE BOARD */
+
+    renderConnections();
+
+
+    /* SHOW MESSAGE */
+
+    updateConnectionsMessage(
+        group.message,
+        false
+    );
+
+
+    /* ALL FOUR GROUPS SOLVED */
+
+    if (
+        solvedConnectionGroups.length === 4
+    ) {
+
+        setTimeout(() => {
+
+            document.getElementById(
+                "connections-message"
+            ).innerHTML += `
                 <br><br>
-                <strong>Four out of four.</strong><br><br>
-                Unfortunately, relationships don't come with
-                a satisfying little "solved" box.
+
+                <strong>Four out of four.</strong>
+
                 <br><br>
+
+                Unfortunately, relationships don't come
+                with a satisfying little "solved" box.
+
+                <br><br>
+
                 The work continues after the game ends.
             `;
 
-            setTimeout(showStrands, 4500);
+
+            setTimeout(
+                showStrands,
+                4500
+            );
 
         }, 1500);
     }
@@ -674,148 +1060,334 @@ function revealConnectionGroup(group) {
 
 
 /* =========================================================
-   STRANDS
-   =========================================================
-
-   11 x 11 grid.
-
-   Hidden words:
-   CONSISTENCY
-   PATIENCE
-   HONESTY
-   EFFORT
-   TRUST
-
-   The words physically intersect with one another.
+   REVEAL REMAINING GROUPS AFTER 6 ATTEMPTS
    ========================================================= */
 
+function revealRemainingConnections() {
 
-/* -------------------------
-   BOARD
-   ------------------------- */
+    connectionGroups.forEach(
+        group => {
+
+            if (
+                !solvedConnectionGroups.includes(
+                    group.title
+                )
+            ) {
+
+                solvedConnectionGroups.push(
+                    group.title
+                );
+
+            }
+
+        }
+    );
+
+
+    renderConnections();
+
+
+    document.getElementById(
+        "connections-message"
+    ).innerHTML = `
+        <strong>Six tries.</strong>
+        <br><br>
+
+        The remaining groups have been revealed.
+        <br><br>
+
+        Sometimes the answer is obvious in hindsight.
+    `;
+
+
+    setTimeout(
+        showStrands,
+        5000
+    );
+}
+
+
+/* ---------- MESSAGE ---------- */
+
+function updateConnectionsMessage(
+    message = null,
+    includeAttempts = false
+) {
+
+    const element =
+        document.getElementById(
+            "connections-message"
+        );
+
+
+    if (message) {
+
+        element.innerHTML =
+            message;
+
+
+        return;
+    }
+
+
+    const remaining =
+        maxConnectionAttempts -
+        connectionAttempts;
+
+
+    element.innerHTML =
+        `
+        Select four.
+
+        <br><br>
+
+        <strong>
+            ${remaining} tries remaining.
+        </strong>
+        `;
+}
+
+
+/* =========================================================
+   STRANDS
+   ========================================================= */
 
 const strandsRows = [
-    "XYPATIENCEQ",
-    "ABCRDMNOPQX",
-    "ZXCVBNMASDF",
-    "QWEHONESTYU",
-    "RTEFFORTIOP",
+
+    "QXMRPLZKJHV",
+    "PATIENCEQWE",
+    "ZKXQMBRPLSD",
+    "QHONESTYABC",
+    "EFFORTQWXYZ",
     "CONSISTENCY",
-    "GHJTRUSTKL",
-    "MNBVCXZQWE",
-    "ASDFGHJKLPO",
-    "QWERTYUIOPA",
-    "ZXCVBNMASDF"
+    "ABCDTRUSTXY",
+    "LMNOPQRSUVW",
+    "ZXCVBNMASDF",
+    "GHJKLQWERTY",
+    "POIUYTRMNBC"
+
 ];
 
 
-/*
-   Word paths.
-
-   Each number is:
-   row * 11 + column
-
-   Rows and columns are zero-indexed.
-*/
-
 const strandsWordPaths = {
 
-    "PATIENCE": [
-        1, 12, 23, 34, 45, 56, 67, 78
-    ],
+    "PATIENCE":
+        [11,12,13,14,15,16,17,18],
 
-    "HONESTY": [
-        36, 37, 38, 39, 40, 41, 42
-    ],
+    "HONESTY":
+        [34,35,36,37,38,39,40],
 
-    "EFFORT": [
-        46, 47, 48, 49, 50, 51
-    ],
+    "EFFORT":
+        [44,45,46,47,48,49],
 
-    "CONSISTENCY": [
-        55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65
-    ],
+    "CONSISTENCY":
+        [55,56,57,58,59,60,61,62,63,64,65],
 
-    "TRUST": [
-        61, 72, 83, 94, 105
-    ]
+    "TRUST":
+        [70,71,72,73,74]
+
 };
 
-const strandsWords = Object.keys(strandsWordPaths);
+
+const strandsWords =
+    Object.keys(
+        strandsWordPaths
+    );
+
 
 let selectedStrandIndices = [];
+
 let foundStrandWords = [];
 
+let strandsAttempts = 0;
 
-/* -------------------------
-   SHOW STRANDS
-   ------------------------- */
+
+/* ---------- SHOW STRANDS ---------- */
 
 function showStrands() {
 
-    document.getElementById("connections").classList.add("hidden");
+    document
+        .getElementById("connections")
+        .classList.add("hidden");
 
-    document.getElementById("strands").classList.remove("hidden");
+
+    document
+        .getElementById("strands")
+        .classList.remove("hidden");
+
 
     createStrands();
 }
 
 
-/* -------------------------
-   CREATE BOARD
-   ------------------------- */
+/* ---------- CREATE STRANDS ---------- */
 
 function createStrands() {
 
-    const board = document.getElementById("strands-board");
+    const board =
+        document.getElementById(
+            "strands-board"
+        );
+
 
     board.innerHTML = "";
 
+
     selectedStrandIndices = [];
+
     foundStrandWords = [];
 
-    strandsRows.forEach((row, rowIndex) => {
+    strandsAttempts = 0;
 
-        row.split("").forEach((letter, colIndex) => {
 
-            const index = rowIndex * 11 + colIndex;
+    strandsRows.forEach(
+        (row, rowIndex) => {
 
-            const tile = document.createElement("button");
+            row.split("").forEach(
+                (letter, colIndex) => {
 
-            tile.classList.add("strand-letter");
+                    const index =
+                        rowIndex * 11 +
+                        colIndex;
 
-            tile.innerText = letter;
 
-            tile.dataset.index = index;
+                    const tile =
+                        document.createElement(
+                            "button"
+                        );
 
-            tile.onclick = () =>
-                selectStrandLetter(tile);
 
-            board.appendChild(tile);
-        });
-    });
+                    tile.classList.add(
+                        "strand-letter"
+                    );
 
-    document.getElementById("strands-message").innerHTML = `
-        <strong>Theme: REBUILDING TRUST</strong><br><br>
-        Find the hidden words.
+
+                    tile.innerText =
+                        letter;
+
+
+                    tile.dataset.index =
+                        index;
+
+
+                    tile.type =
+                        "button";
+
+
+                    tile.onclick = () =>
+                        selectStrandLetter(
+                            tile
+                        );
+
+
+                    board.appendChild(
+                        tile
+                    );
+
+                }
+            );
+        }
+    );
+
+
+    /* ---------- TRIES ---------- */
+
+    let counter =
+        document.getElementById(
+            "strands-tries"
+        );
+
+
+    if (!counter) {
+
+        counter =
+            document.createElement(
+                "div"
+            );
+
+        counter.id =
+            "strands-tries";
+
+
+        board.after(
+            counter
+        );
+    }
+
+
+    counter.innerText =
+        "Unlimited tries";
+
+
+    /* ---------- SUBMIT ---------- */
+
+    let submit =
+        document.getElementById(
+            "strands-submit"
+        );
+
+
+    if (!submit) {
+
+        submit =
+            document.createElement(
+                "button"
+            );
+
+
+        submit.id =
+            "strands-submit";
+
+
+        submit.innerText =
+            "SUBMIT";
+
+
+        submit.onclick =
+            submitStrandWord;
+
+
+        counter.after(
+            submit
+        );
+    }
+
+
+    submit.disabled = true;
+
+
+    document.getElementById(
+        "strands-message"
+    ).innerHTML = `
+        <strong>Theme: REBUILDING TRUST</strong>
+        <br><br>
+
+        Find the hidden words by connecting adjacent letters.
     `;
 }
 
 
-/* -------------------------
-   SELECT STRANDS LETTER
-   ------------------------- */
+/* ---------- SELECT LETTER ---------- */
 
 function selectStrandLetter(tile) {
 
-    const index = Number(tile.dataset.index);
-
-    // Already found
-    if (tile.classList.contains("found")) {
+    if (
+        tile.classList.contains(
+            "found"
+        )
+    ) {
         return;
     }
 
-    // Clicking the previous letter removes it
+
+    const index =
+        Number(
+            tile.dataset.index
+        );
+
+
+    /* UNSELECT LAST LETTER */
+
     if (
         selectedStrandIndices.length > 0 &&
         selectedStrandIndices[
@@ -825,162 +1397,348 @@ function selectStrandLetter(tile) {
 
         selectedStrandIndices.pop();
 
-        tile.classList.remove("selected");
+        tile.classList.remove(
+            "selected"
+        );
+
+        updateStrandsSubmit();
 
         return;
     }
 
-    // Don't select the same tile twice
-    if (selectedStrandIndices.includes(index)) {
+
+    /* DON'T SELECT SAME LETTER TWICE */
+
+    if (
+        selectedStrandIndices.includes(
+            index
+        )
+    ) {
         return;
     }
 
-    // Must be adjacent to previous letter
-    if (selectedStrandIndices.length > 0) {
+
+    /* CHECK ADJACENCY */
+
+    if (
+        selectedStrandIndices.length > 0
+    ) {
 
         const previous =
             selectedStrandIndices[
                 selectedStrandIndices.length - 1
             ];
 
-        if (!areAdjacent(previous, index)) {
+
+        if (
+            !areAdjacent(
+                previous,
+                index
+            )
+        ) {
 
             resetStrandSelection();
 
-            document.getElementById("strands-message").innerText =
-                "Those letters aren't connected. Try again.";
+
+            document.getElementById(
+                "strands-message"
+            ).innerText =
+                "That letter isn't connected. Start a new word.";
+
+
+            updateStrandsSubmit();
 
             return;
         }
     }
 
-    selectedStrandIndices.push(index);
 
-    tile.classList.add("selected");
+    selectedStrandIndices.push(
+        index
+    );
 
-    checkStrandSelection();
+
+    tile.classList.add(
+        "selected"
+    );
+
+
+    updateStrandsSubmit();
 }
 
 
-/* -------------------------
-   ADJACENCY
-   ------------------------- */
+/* ---------- ADJACENCY ---------- */
 
-function areAdjacent(index1, index2) {
+function areAdjacent(
+    index1,
+    index2
+) {
 
-    const row1 = Math.floor(index1 / 11);
-    const col1 = index1 % 11;
+    const row1 =
+        Math.floor(
+            index1 / 11
+        );
 
-    const row2 = Math.floor(index2 / 11);
-    const col2 = index2 % 11;
+
+    const col1 =
+        index1 % 11;
+
+
+    const row2 =
+        Math.floor(
+            index2 / 11
+        );
+
+
+    const col2 =
+        index2 % 11;
+
 
     return (
         Math.abs(row1 - row2) <= 1 &&
         Math.abs(col1 - col2) <= 1 &&
-        !(row1 === row2 && col1 === col2)
+        !(row1 === row2 &&
+          col1 === col2)
     );
 }
 
 
-/* -------------------------
-   CHECK WORD
-   ------------------------- */
+/* ---------- SUBMIT BUTTON ---------- */
 
-function checkStrandSelection() {
+function updateStrandsSubmit() {
 
-    const selectedWord = selectedStrandIndices
+    const submit =
+        document.getElementById(
+            "strands-submit"
+        );
+
+
+    if (!submit) {
+        return;
+    }
+
+
+    submit.disabled =
+        selectedStrandIndices.length === 0;
+}
+
+
+/* ---------- GET WORD ---------- */
+
+function getSelectedStrandWord() {
+
+    return selectedStrandIndices
         .map(index => {
 
-            const row = Math.floor(index / 11);
-            const col = index % 11;
+            const row =
+                Math.floor(
+                    index / 11
+                );
+
+
+            const col =
+                index % 11;
+
 
             return strandsRows[row][col];
 
         })
         .join("");
-
-    // Check if this is a complete word
-    if (strandsWords.includes(selectedWord)) {
-
-        if (!foundStrandWords.includes(selectedWord)) {
-
-            foundStrandWords.push(selectedWord);
-
-            selectedStrandIndices.forEach(index => {
-
-                const tile = document.querySelector(
-                    `.strand-letter[data-index="${index}"]`
-                );
-
-                tile.classList.remove("selected");
-
-                tile.classList.add("found");
-            });
-
-            selectedStrandIndices = [];
-
-            document.getElementById("strands-message").innerHTML = `
-                <strong>${selectedWord}</strong> ✓
-                <br><br>
-                ${foundStrandWords.length} of ${strandsWords.length} found.
-            `;
-
-            if (
-                foundStrandWords.length ===
-                strandsWords.length
-            ) {
-
-                setTimeout(() => {
-
-                    document.getElementById(
-                        "strands-message"
-                    ).innerHTML = `
-                        <strong>STRANDS COMPLETE.</strong>
-                        <br><br>
-                        That's the thing about trust.
-                        <br><br>
-                        It isn't rebuilt in one grand gesture.
-                        It's rebuilt in small things,
-                        repeatedly.
-                    `;
-
-                    setTimeout(showFinal, 4000);
-
-                }, 1200);
-            }
-        }
-    }
 }
 
 
-/* -------------------------
-   RESET STRAND SELECTION
-   ------------------------- */
+/* ---------- SUBMIT STRANDS ---------- */
+
+function submitStrandWord() {
+
+    if (
+        selectedStrandIndices.length === 0
+    ) {
+        return;
+    }
+
+
+    const selectedWord =
+        getSelectedStrandWord();
+
+
+    /* CORRECT */
+
+    if (
+        strandsWords.includes(
+            selectedWord
+        ) &&
+        !foundStrandWords.includes(
+            selectedWord
+        )
+    ) {
+
+        foundStrandWords.push(
+            selectedWord
+        );
+
+
+        selectedStrandIndices.forEach(
+            index => {
+
+                const tile =
+                    document.querySelector(
+                        `.strand-letter[data-index="${index}"]`
+                    );
+
+
+                if (tile) {
+
+                    tile.classList.remove(
+                        "selected"
+                    );
+
+
+                    tile.classList.add(
+                        "found"
+                    );
+                }
+
+            }
+        );
+
+
+        selectedStrandIndices = [];
+
+
+        document.getElementById(
+            "strands-message"
+        ).innerHTML = `
+            <strong>${selectedWord}</strong> ✓
+            <br><br>
+
+            ${foundStrandWords.length}
+            of
+            ${strandsWords.length}
+            found.
+        `;
+
+
+        updateStrandsSubmit();
+
+
+        if (
+            foundStrandWords.length ===
+            strandsWords.length
+        ) {
+
+            finishStrands();
+        }
+
+
+        return;
+    }
+
+
+    /* WRONG — UNLIMITED */
+
+    strandsAttempts++;
+
+
+    resetStrandSelection();
+
+
+    document.getElementById(
+        "strands-message"
+    ).innerHTML = `
+        <strong>Not quite.</strong>
+        <br><br>
+
+        "${selectedWord}" isn't one of them.
+        <br><br>
+
+        Keep looking.
+    `;
+
+
+    document.getElementById(
+        "strands-tries"
+    ).innerText =
+        "Unlimited tries";
+
+
+    updateStrandsSubmit();
+}
+
+
+/* ---------- RESET STRANDS SELECTION ---------- */
 
 function resetStrandSelection() {
 
-    selectedStrandIndices.forEach(index => {
+    selectedStrandIndices.forEach(
+        index => {
 
-        const tile = document.querySelector(
-            `.strand-letter[data-index="${index}"]`
-        );
+            const tile =
+                document.querySelector(
+                    `.strand-letter[data-index="${index}"]`
+                );
 
-        if (tile) {
-            tile.classList.remove("selected");
+
+            if (tile) {
+
+                tile.classList.remove(
+                    "selected"
+                );
+            }
+
         }
-    });
+    );
+
 
     selectedStrandIndices = [];
+
+
+    updateStrandsSubmit();
+}
+
+
+/* ---------- FINISH STRANDS ---------- */
+
+function finishStrands() {
+
+    document.getElementById(
+        "strands-message"
+    ).innerHTML = `
+        <strong>STRANDS COMPLETE.</strong>
+        <br><br>
+
+        That's the thing about trust.
+        <br><br>
+
+        It isn't rebuilt in one grand gesture.
+        It's rebuilt in small things, repeatedly.
+    `;
+
+
+    document.getElementById(
+        "strands-submit"
+    ).disabled = true;
+
+
+    setTimeout(
+        showFinal,
+        4000
+    );
 }
 
 
 /* =========================================================
-   FINAL APOLOGY
+   FINAL
    ========================================================= */
 
 function showFinal() {
 
-    document.getElementById("strands").classList.add("hidden");
+    document
+        .getElementById("strands")
+        .classList.add("hidden");
 
-    document.getElementById("final").classList.remove("hidden");
+
+    document
+        .getElementById("final")
+        .classList.remove("hidden");
 }
